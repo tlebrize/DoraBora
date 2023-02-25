@@ -27,13 +27,16 @@ class Server:
         else:
             raise Exception(f"Invalid state for {self.id} : {self.state}.")
 
+    def format_connection(self):
+        return f"{self.host}:{self.port};{self.format_state()}"
+
 
 @dataclass
 class ServerList:
     servers: [Server]
 
     def format_login_list(self):
-        return "|".join([f"{s.id};{s.format_state()};110;1" for s in self.servers])
+        return "|".join([f"{s.id};{s.format_state()};110;0" for s in self.servers])
 
 
 class AccountState(str, Enum):
@@ -53,6 +56,7 @@ class Account:
     subscribed_seconds: int
     is_game_master: bool
     security_question: str
+    community: int
 
     def format_is_game_master(self):
         return str(int(self.is_game_master))
@@ -60,10 +64,22 @@ class Account:
     def format_security_question(self):
         return self.security_question.replace(" ", "+")
 
+    def subscribed_milliseconds(self):
+        return self.subscribed_seconds * 1000
 
+
+@dataclass
+class AccountList:
+    accounts: [Account]
+
+
+@dataclass
 class Character:
     id: int
     server_id: int
-    server: Server
     account_id: int
-    account: Account
+
+
+@dataclass
+class CharacterList:
+    characters: [Character]

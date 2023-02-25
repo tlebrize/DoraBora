@@ -5,6 +5,4 @@ POLICY = """
 <allow-access-from domain="*" to-ports="*" secure="false"/>
 <allow-http-request-headers-from domain="*" headers="*" secure="false"/>
 </cross-domain-policy>"
-"""
-
-EOM = b"\n\0"
+""".strip()
