@@ -26,20 +26,22 @@ class BaseDatabase:
         return data
 
     def get(self, id_):
-        return self.model(
-            **self.execute(
-                f"SELECT * FROM {self.table} WHERE id = %(id)s;",
-                {"id": id_},
-            )[0]
+        rows = self.execute(
+            f"SELECT * FROM {self.table} WHERE id = %(id)s;",
+            {"id": id_},
         )
+        if not rows:
+            return None
+        return self.model(**rows[0])
 
     def get_by(self, key, value):
-        return self.model(
-            **self.execute(
-                f"select * from {self.table} WHERE {key} = %(value)s;",
-                {"value": value},
-            )[0]
+        rows = self.execute(
+            f"select * from {self.table} WHERE {key} = %(value)s;",
+            {"value": value},
         )
+        if not rows:
+            return None
+        return self.model(**rows[0])
 
     def list(self):
         return self.list_model(
@@ -47,6 +49,17 @@ class BaseDatabase:
                 self.model(**row)
                 for row in self.execute(
                     f"SELECT * FROM {self.table};",
+                )
+            ]
+        )
+
+    def where(self, condition, kwargs):
+        return self.list_model(
+            [
+                self.model(**row)
+                for row in self.execute(
+                    f"SELECT * FROM {self.table} WHERE {condition};",
+                    kwargs,
                 )
             ]
         )
@@ -69,3 +82,6 @@ VALUES ( {parameters} ) RETURNING *;""",
             f"UPDATE {self.table} SET {key} = %(value)s WHERE id = %(id)s;",
             {"id": id_, "value": value},
         )
+
+    def delete(self, id_):
+        self.execute(f"DELETE FROM {self.table} WHERE id = %s", [id_])

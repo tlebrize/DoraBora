@@ -38,7 +38,10 @@ class Character:
     stat_points: int
     xp: int
 
-    def gfxid(self):
+    def get_colors(self):
+        return [(hex(c)[2:] if c != -1 else -1) for c in self.colors]
+
+    def get_gfxid(self):
         return self.class_ * 10 + self.gender
 
     def format_alk(self):
@@ -49,10 +52,8 @@ class Character:
                     self.id,
                     self.name,
                     self.level,
-                    self.gfxid(),
-                    self.colors[0],
-                    self.colors[1],
-                    self.colors[2],
+                    self.get_gfxid(),
+                    *self.get_colors(),
                     ",,,,",  # items (getGMStuffString ?)
                     0,  # seller mode
                     self.server_id,

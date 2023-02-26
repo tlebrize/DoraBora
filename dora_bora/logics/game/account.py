@@ -32,6 +32,8 @@ class AccountLogic:
             self.send_queue_position()
         elif message.startswith("A"):
             self.handle_add_character(message[1:])
+        elif message.startswith("D"):
+            self.handle_delete_character(message[1:])
         else:
             exit(0)
 
@@ -78,3 +80,15 @@ class AccountLogic:
         )
         self.outputs.put("AAK")  # create perso ok
         self.send_characters_list()
+
+    def handle_delete_character(self, data):
+        id_, answer = data.split("|")
+        if self.db.characters.where(
+            "id = %(id)s AND account_id = %(account_id)s",
+            {"id": id_, "account_id": self.account.id},
+        ).count():
+            # check question before delete
+            self.db.characters.delete(id_)
+            self.send_characters_list()
+        else:
+            self.outputs.put("ADE")
