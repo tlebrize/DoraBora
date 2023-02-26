@@ -1,7 +1,7 @@
 from dora_bora.logics import LoginLogic
 from dora_bora.constants import POLICY
 from dora_bora.database import AccountsDatabase, ServersDatabase, CharactersDatabase
-from dora_bora.datamodel import ServerState
+from dora_bora.datamodel import ServerState, Gender, Class
 
 
 def test_login():
@@ -46,7 +46,22 @@ def test_login():
     servers_db = ServersDatabase("test")
     servers_db.set(1, "state", ServerState.Online)
     characters_db = CharactersDatabase("test")
-    characters_db.create({"server_id": 1, "account_id": account.id})
+    characters_db.create(
+        {
+            "server_id": 1,
+            "account_id": account.id,
+            "name": "Pls",
+            "gender": Gender.Female,
+            "class_": Class.Iop,
+            "colors": [-1, -1, -1],
+            "kamas": 0,
+            "spell_points": 0,
+            "stat_points": 0,
+            "energy": 0,
+            "level": 1,
+            "xp": 0,
+        }
+    )
 
     login.inputs.put("Ax")
     login.handle_input()

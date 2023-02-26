@@ -3,7 +3,7 @@ import random
 
 from dora_bora.constants import POLICY
 from dora_bora.non_blocking_queue import NonBlockingQueue
-from dora_bora.database import ServersDatabase, AccountsDatabase
+from dora_bora.database_accessor import DatabaseAccessor
 from dora_bora.datamodel import AccountState
 
 from .exceptions import AccountNotFound, InvalidVersion, ServerNotFound
@@ -13,8 +13,7 @@ class LoginLogic:
     def __init__(self):
         self.inputs = NonBlockingQueue()
         self.outputs = NonBlockingQueue()
-        self.servers_db = ServersDatabase()
-        self.accounts_db = AccountsDatabase()
+        self.db = DatabaseAccessor()
         self.step = 0
 
     def start(self):
@@ -57,12 +56,12 @@ class LoginLogic:
         self.password_hash = password_hash[2:]
 
     def validate_login(self):
-        self.account = self.accounts_db.get_by("username", self.username)
+        self.account = self.db.accounts.get_by("username", self.username)
         if not self.account:
             raise AccountNotFound(self.username)
 
     def send_login_info(self):
-        servers = self.servers_db.list()
+        servers = self.db.servers.list()
         login_packets = [
             "Ad" + self.account.nickname,
             "Ac" + str(self.account.community),
@@ -94,7 +93,7 @@ class LoginLogic:
         server_characters = "|".join(
             [
                 f"{server_id},{count}"
-                for (server_id, count) in self.servers_db.count_characters(
+                for (server_id, count) in self.db.servers.count_characters(
                     self.account.id
                 )
             ]
@@ -103,8 +102,8 @@ class LoginLogic:
         self.outputs.put("AxK" + subscribed + server_characters)
 
     def send_server_connection(self, id_):
-        server = self.servers_db.get(id_)
+        server = self.db.servers.get(id_)
         if not server:
             raise ServerNotFound(id_)
         self.outputs.put("AYK" + server.format_connection())
-        self.accounts_db.set(self.account.id, "state", AccountState.InLogin)
+        self.db.accounts.set(self.account.id, "state", AccountState.InLogin)

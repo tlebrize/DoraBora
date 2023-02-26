@@ -47,7 +47,7 @@ def create_tables(dbname):
             state server_state NOT NULL DEFAULT 'offline',
             subscriber_only boolean NOT NULL,
             PRIMARY KEY (id),
-            CONSTRAINT name UNIQUE (name)
+            CONSTRAINT servers_name UNIQUE (name)
         );"""
     )
 
@@ -69,25 +69,35 @@ def create_tables(dbname):
             security_question text NOT NULL,
             community integer NOT NULL,
             PRIMARY KEY (id),
-            CONSTRAINT username UNIQUE (username),
-            CONSTRAINT nickname UNIQUE (nickname)
+            CONSTRAINT accounts_username UNIQUE (username),
+            CONSTRAINT accounts_nickname UNIQUE (nickname)
         );"""
     )
 
-    print("Creating", dbname, "characters table.")
     db.execute(
         """CREATE TABLE characters
         (
-            id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-            server_id integer NOT NULL,
-            account_id integer NOT NULL,
+            id                  integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+            server_id           integer NOT NULL,
+            account_id          integer NOT NULL,
+            class_              integer NOT NULL,
+            name                text NOT NULL,
+            gender              integer NOT NULL,
+            colors              integer[3] NOT NULL DEFAULT '{-1,-1,-1}',
+            level               integer NOT NULL DEFAULT 1,
+            kamas               integer NOT NULL DEFAULT 0,
+            spell_points        integer NOT NULL DEFAULT 0,
+            stat_points         integer NOT NULL DEFAULT 0,
+            energy              integer NOT NULL DEFAULT 0,
+            xp                  integer NOT NULL DEFAULT 0,
             PRIMARY KEY (id),
-            CONSTRAINT server FOREIGN KEY (server_id)
+            CONSTRAINT character_name UNIQUE (name),
+            CONSTRAINT character_server FOREIGN KEY (server_id)
                 REFERENCES servers (id) MATCH SIMPLE
                 ON UPDATE NO ACTION
                 ON DELETE CASCADE
                 NOT VALID,
-            CONSTRAINT account FOREIGN KEY (account_id)
+            CONSTRAINT character_account FOREIGN KEY (account_id)
                 REFERENCES accounts (id) MATCH SIMPLE
                 ON UPDATE NO ACTION
                 ON DELETE CASCADE
@@ -123,22 +133,22 @@ def seed_dora_bora(dbname):
             "subscribed_seconds": 1000000,
             "is_game_master": "false",
             "security_question": "isItPls",
-            "community": 0,
+            "community": 2,
         }
     )
     pprint(account)
 
     print("\ninserting characters:")
     characters_db = CharactersDatabase(dbname)
-    for server in servers:
-        pprint(
-            characters_db.create(
-                {
-                    "server_id": server.id,
-                    "account_id": account.id,
-                }
-            )
-        )
+    # for server in servers:
+    #     pprint(
+    #         characters_db.create(
+    #             {
+    #                 "server_id": server.id,
+    #                 "account_id": account.id,
+    #             }
+    #         )
+    #     )
     print("Done.\n")
 
 

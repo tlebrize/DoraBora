@@ -4,13 +4,12 @@ from dora_bora.datamodel import Server, ServerList
 
 
 class ServersDatabase(BaseDatabase):
-    default_fields = ["id", "state"]
     table = "servers"
     model = Server
     list_model = ServerList
 
     def count_characters(self, account_id):
-        return self.execute(
+        counts = self.execute(
             """
 SELECT s.id, count(c.id)
 FROM servers s
@@ -20,3 +19,4 @@ GROUP BY s.id;
             """,
             [account_id],
         )
+        return [(c["id"], c["count"]) for c in counts]

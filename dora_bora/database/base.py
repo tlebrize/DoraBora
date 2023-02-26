@@ -1,5 +1,6 @@
 import os
 import psycopg
+from psycopg.rows import dict_row
 
 
 class BaseDatabase:
@@ -8,6 +9,7 @@ class BaseDatabase:
         self.connection = psycopg.connect(
             f"postgresql://postgres:password@localhost:5432/{name}",
             autocommit=True,
+            row_factory=dict_row,
         )
 
     def execute(self, *args, **kwargs):
@@ -25,7 +27,7 @@ class BaseDatabase:
 
     def get(self, id_):
         return self.model(
-            *self.execute(
+            **self.execute(
                 f"SELECT * FROM {self.table} WHERE id = %(id)s;",
                 {"id": id_},
             )[0]
@@ -33,7 +35,7 @@ class BaseDatabase:
 
     def get_by(self, key, value):
         return self.model(
-            *self.execute(
+            **self.execute(
                 f"select * from {self.table} WHERE {key} = %(value)s;",
                 {"value": value},
             )[0]
@@ -42,7 +44,7 @@ class BaseDatabase:
     def list(self):
         return self.list_model(
             [
-                self.model(*row)
+                self.model(**row)
                 for row in self.execute(
                     f"SELECT * FROM {self.table};",
                 )
@@ -50,15 +52,15 @@ class BaseDatabase:
         )
 
     def create(self, values):
-        keys = self.model.__annotations__.keys() - self.default_fields
+        keys = list(sorted(values.keys()))
         fields = ", ".join(keys)
         parameters = ", ".join([f"%({field})s" for field in keys])
         return self.model(
-            *self.execute(
+            **self.execute(
                 f"""
 INSERT INTO {self.table} ( {fields} )
 VALUES ( {parameters} ) RETURNING *;""",
-                values,
+                dict(sorted(values.items())),
             )[0]
         )
 
