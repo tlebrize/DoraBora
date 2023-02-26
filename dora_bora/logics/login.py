@@ -76,13 +76,15 @@ class LoginLogic:
         if msg == "Af":
             self.outputs.put("Af0|0|0|1|-1")
             # login queue is disabled.
-        if msg == "AF":
-            pass
-            # Friend list
         elif msg == "Ax":
             self.send_server_list()
         elif msg[:2] == "AX":
             self.send_server_connection(int(msg[2:]))
+        # if msg == "AF":
+        #     pass
+        #     # Friend list
+        else:
+            print("not handled", msg)
 
     def send_server_list(self):
         if self.account.subscribed_seconds:

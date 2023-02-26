@@ -3,10 +3,13 @@ from dotenv import load_dotenv
 from twisted.internet.protocol import Factory
 from twisted.internet import reactor
 
-from dora_bora.logics import LoginLogic, GameLogic
+from dora_bora.logics import LoginLogic, RootGameLogic
 from dora_bora.protocol import BaseProtocol
 from dora_bora.database import ServersDatabase
 from dora_bora.datamodel import ServerState
+from dora_bora.shared_state import get_shared_state
+
+_ = get_shared_state()
 
 
 class LoginFactory(Factory):
@@ -24,7 +27,7 @@ class GameFactory(Factory):
         self.servers_db.set(self.server_id, "state", ServerState.Offline)
 
     def buildProtocol(self, addr):
-        return BaseProtocol(GameLogic(self.server_id))
+        return BaseProtocol(RootGameLogic(self.server_id))
 
 
 def main():

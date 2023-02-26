@@ -1,38 +1,43 @@
-from dora_bora.logics.exceptions import InvalidAccountState
+from dora_bora.logics.exceptions import InvalidAccountState, NotHandled
 from dora_bora.datamodel import Gender, Class, AccountState
+from dora_bora.shared_state import get_shared_state
+
 from .child import ChildLogic
 
 
 class AccountLogic(ChildLogic):
     def handle_input(self, message):
         if message.startswith("T"):
-            self.root.account = self.db.accounts.get(int(message[1:]))
-            if self.root.account.state != AccountState.InLogin:
-                raise InvalidAccountState(self.root.account.state)
-            self.outputs.put("ATK0")
-            self.db.accounts.set(self.root.account.id, "state", AccountState.InGame)
-
+            return self.handle_connect(message[1:])
         elif message.startswith("k"):
-            pass  # setKeyIndex ?
+            return  # setKeyIndex ?
         elif message.startswith("V"):
-            self.outputs.put("AV0")  # RegionalVersion ?
+            return self.outputs.put("AV0")  # RegionalVersion ?
         elif message.startswith("g"):
             self._language = message[1:]
+            return
             # then getGifts ?
         elif message.startswith("i"):
             self._identity = message[1:]
+            return
         elif message.startswith("L"):
-            self.send_characters_list()
+            return self.send_characters_list()
         elif message.startswith("f"):
-            self.send_queue_position()
+            return self.send_queue_position()
         elif message.startswith("A"):
-            self.handle_add_character(message[1:])
+            return self.handle_add_character(message[1:])
         elif message.startswith("D"):
-            self.handle_delete_character(message[1:])
+            return self.handle_delete_character(message[1:])
         elif message.startswith("S"):
-            self.handle_join_game(message[1:])
-        else:
-            exit(0)
+            return self.handle_join_game(message[1:])
+        raise NotHandled(message)
+
+    def handle_connect(self, data):
+        self.root.account = self.db.accounts.get(int(data))
+        if self.root.account.state != AccountState.InLogin:
+            raise InvalidAccountState(self.root.account.state)
+        self.outputs.put("ATK0")
+        self.db.accounts.set(self.root.account.id, "state", AccountState.InGame)
 
     def send_characters_list(self):
         characters = self.db.characters.list_for_account(self.root.account.id)
@@ -72,7 +77,7 @@ class AccountLogic(ChildLogic):
                 "stat_points": 0,
                 "energy": 0,
                 "level": 1,
-                "xp": 0,
+                "experience": 0,
             }
         )
         self.outputs.put("AAK")  # create perso ok
@@ -103,16 +108,20 @@ class AccountLogic(ChildLogic):
             # Items
         )
         # check fight
-        self.outputs.put("ILF0")  # No fight
+        self.outputs.put("ILS2000")  # No fight
         # check jobs
-        self.outputs.put("ZS0")  # Alignment
-        self.outputs.put("Cc+^")
+        self.outputs.put("ZS-1")  # Alignment neutral
+        self.outputs.put("cC+i*")  # chats enabled
         # check guild
         self.outputs.put("al|")  # Zone alignment
-        self.outputs.put("el0|0")  # Emotes
+        self.outputs.put("eL0|0")  # Emotes
         self.outputs.put("AR6bk")  # Restrictions
-        self.outputs.put("Ow0|999")  # used_pods|max_pods
+        self.outputs.put(c.format_pods())  # used_pods|max_pods
+        self.root.map = self.db.maps.get(c.map_id)
+        self.outputs.put(self.root.map.format_map_data())  # Map data
+        self.shared.move_character(c.id, self.root.map.id)
+        self.outputs.put("fC0")  # fight counts
         self.outputs.put("FO-")  # - = don't see friend connection / +
-        self.outputs.put("SL")  # Spell list id~level~placement;
-        self.outputs.put("Im189")  # Welcome message
+        self.outputs.put("SL1~1~1;2~1~2;3~2~4;")  # Spell list id~level~placement;
+        self.outputs.put("Im189")  # Welcome message, non-existant
         self.outputs.put("Im0153;127.0.0.1")  # IP msg

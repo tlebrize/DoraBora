@@ -59,7 +59,7 @@ def test_login():
             "stat_points": 0,
             "energy": 0,
             "level": 1,
-            "xp": 0,
+            "experience": 0,
         }
     )
 

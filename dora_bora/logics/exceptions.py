@@ -12,3 +12,11 @@ class AccountNotFound(BaseException):
 
 class InvalidAccountState(BaseException):
     pass
+
+
+class InvalidWorldInfo(BaseException):
+    pass
+
+
+class NotHandled(BaseException):
+    pass

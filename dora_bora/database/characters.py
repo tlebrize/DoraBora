@@ -18,3 +18,15 @@ class CharactersDatabase(BaseDatabase):
                 )
             ]
         )
+
+    def create(self, values):
+        if not ("map_id" in values):
+            values["map_id"] = self.execute(
+                """
+SELECT id FROM maps
+WHERE position[2] = 0
+    AND position[3] = 0
+LIMIT 1;
+                """
+            )[0]["id"]
+        return super().create(values)

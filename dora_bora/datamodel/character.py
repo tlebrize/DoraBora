@@ -25,6 +25,7 @@ class Class(int, Enum):
 @dataclass
 class Character:
     account_id: int
+    map_id: int
     class_: Class
     colors: [int]
     energy: int
@@ -36,7 +37,7 @@ class Character:
     server_id: int
     spell_points: int
     stat_points: int
-    xp: int
+    experience: int
 
     def get_colors(self):
         return [(hex(c)[2:] if c != -1 else -1) for c in self.colors]
@@ -62,6 +63,9 @@ class Character:
             )
         )
 
+    def format_pods(self):
+        return "Ow0|999"  # `Ow`used_pods|max_pods
+
 
 @dataclass
 class CharacterList:
@@ -72,30 +76,3 @@ class CharacterList:
 
     def count(self):
         return len(self.characters)
-
-
-"""
-`id`,
-`name`,
-`sexe`,
-`class`,
-`color1`,
-`color2`,
-`color3`,
-`kamas`,
-`spellboost`,
-`capital`,
-`energy`,
-`level`,
-`xp`,
-`size`,
-`gfx`,
-`account`,
-`cell`,
-`map`,
-`spells`,
-`objets`,
-`storeObjets`,
-`morphMode`,
-`server`
-"""

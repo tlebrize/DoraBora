@@ -1,2 +1,2 @@
 from .login import LoginLogic
-from .game import GameLogic
+from .game import RootGameLogic
