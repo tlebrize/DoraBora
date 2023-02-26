@@ -11,7 +11,6 @@ from dora_bora.datamodel import ServerState
 
 class LoginFactory(Factory):
     def buildProtocol(self, addr):
-        print("build login", addr)
         return BaseProtocol(LoginLogic())
 
 
