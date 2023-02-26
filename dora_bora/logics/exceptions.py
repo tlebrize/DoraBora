@@ -10,5 +10,5 @@ class AccountNotFound(BaseException):
     pass
 
 
-class InvalidAT(BaseException):
+class InvalidAccountState(BaseException):
     pass

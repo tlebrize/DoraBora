@@ -38,10 +38,39 @@ class Character:
     stat_points: int
     xp: int
 
+    def gfxid(self):
+        return self.class_ * 10 + self.gender
+
+    def format_alk(self):
+        return ";".join(
+            map(
+                str,
+                [
+                    self.id,
+                    self.name,
+                    self.level,
+                    self.gfxid(),
+                    self.colors[0],
+                    self.colors[1],
+                    self.colors[2],
+                    ",,,,",  # items (getGMStuffString ?)
+                    0,  # seller mode
+                    self.server_id,
+                    0,  # is dead ?
+                ],
+            )
+        )
+
 
 @dataclass
 class CharacterList:
     characters: [Character]
+
+    def format_alk(self):
+        return "|".join([c.format_alk() for c in self.characters])
+
+    def count(self):
+        return len(self.characters)
 
 
 """
