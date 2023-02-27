@@ -9,7 +9,20 @@ class GameLogic(ChildLogic):
             return self.send_game_create(message[1:])
         elif message.startswith("I"):
             return self.send_extra_informations()
+        elif message.startswith("A"):
+            return self.handle_action(message[1:])
         raise NotHandled(message)
+
+    def handle_move_action(self, data):
+    TODO #GameCase targetCell = this.player.getCurMap().getCase(CryptManager.cellCode_To_IDM(path.substring(path.length() - 2)));
+
+
+    def handle_action(self, data):
+        action_id = int(data[:3])
+        if action_id == 1:
+            self.handle_move_action(data[3:])
+        else:
+            raise NotHandled(f"Action:{data}")
 
     def send_game_create(self, data):
         c = self.root.character
@@ -21,7 +34,7 @@ class GameLogic(ChildLogic):
             alignement = ""
 
         As = (
-            f"As{c.experience},0,1000"  # current exp,current level exp,next level exp
+            f"As{c.experience},0,1000"  # current,currentLevelExp,nextLevelExp
             "1,1,1"  # ???
             f"|{c.kamas}|{c.stat_points}|{c.spell_points}|"
             f"-1{alignement}|"
@@ -92,7 +105,7 @@ class GameLogic(ChildLogic):
                     map(
                         str,
                         [
-                            "GM|+210",  # cellid
+                            f"GM|+{210}",  # cellid
                             1,  # orientation
                             0,  # ? level ?
                             c.id,
