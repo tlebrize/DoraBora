@@ -118,8 +118,9 @@ class AccountLogic(ChildLogic):
         self.outputs.put("AR6bk")  # Restrictions
         self.outputs.put(c.format_pods())  # used_pods|max_pods
         self.root.map = self.db.maps.get(c.map_id)
-        self.outputs.put(self.root.map.format_map_data())  # Map data
-        self.shared.move_character(c.id, self.root.map.id)
+        self.outputs.put(self.root.map.format_map_data())
+        self.shared.characters.move_to_map(c.id, self.root.map.id)
+        self.shared.characters.move_to_cell(c.id, 210)
         self.outputs.put("fC0")  # fight counts
         self.outputs.put("FO-")  # - = don't see friend connection / +
         self.outputs.put("SL1~1~1;2~1~2;3~2~4;")  # Spell list id~level~placement;

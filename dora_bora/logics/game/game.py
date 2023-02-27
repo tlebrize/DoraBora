@@ -1,5 +1,9 @@
+from dora_bora import game_actions
 from dora_bora.logics.exceptions import NotHandled
 from dora_bora.datamodel import AccountState, Gender, Class
+from dora_bora.parsers import decode_cell_b64, encode_cell_b64
+
+
 from .child import ChildLogic
 
 
@@ -11,11 +15,28 @@ class GameLogic(ChildLogic):
             return self.send_extra_informations()
         elif message.startswith("A"):
             return self.handle_action(message[1:])
+        elif message.startswith("K"):
+            return self.handle_acknowledge_action(message[1:])
         raise NotHandled(message)
 
     def handle_move_action(self, data):
-    TODO #GameCase targetCell = this.player.getCurMap().getCase(CryptManager.cellCode_To_IDM(path.substring(path.length() - 2)));
-
+        c = self.root.character
+        target_cell = decode_cell_b64(data[-2:])
+        game_action_id = self.shared.game_actions.move(c.id, target_cell)
+        current_cell_code = encode_cell_b64(
+            self.shared.characters.get_cell(c.id),
+        )
+        path = current_cell_code + data  # check pathfinding?
+        self.outputs.put(
+            ";".join(
+                [
+                    f"GA{game_action_id}",
+                    "1",
+                    str(c.id),
+                    f"a{path}",
+                ],
+            )
+        )
 
     def handle_action(self, data):
         action_id = int(data[:3])
@@ -23,6 +44,24 @@ class GameLogic(ChildLogic):
             self.handle_move_action(data[3:])
         else:
             raise NotHandled(f"Action:{data}")
+
+    def handle_acknowledge_action(self, data):
+        success = data[0] == "K"
+        id_, *payload = data[1:].split("|")
+        action = self.shared.game_actions.pop(int(id_))
+        if isinstance(action, game_actions.Move):
+            if success:
+                self.shared.characters.move_to_cell(
+                    action.character,
+                    action.target_cell,
+                )
+            else:
+                self.shared.characters.move_to_cell(
+                    action.character,
+                    int(payload[0]),
+                )
+            return self.outputs.put("BN")
+        raise NotHandled(action)
 
     def send_game_create(self, data):
         c = self.root.character
@@ -97,15 +136,16 @@ class GameLogic(ChildLogic):
         if not getattr(self.root, "map"):
             self.root.map = self.db.maps.get(self.root.character.map_id)
 
-        characters = self.shared.characters_at_map.get(self.root.map.id, [])
+        characters = self.shared.maps.characters.get(self.root.map.id, [])
         for character_id in characters:
             c = self.db.characters.get(character_id)
+            cellid = self.shared.characters.get_cell(c.id)
             self.outputs.put(
                 ";".join(
                     map(
                         str,
                         [
-                            f"GM|+{210}",  # cellid
+                            f"GM|+{cellid}",  # cellid
                             1,  # orientation
                             0,  # ? level ?
                             c.id,
