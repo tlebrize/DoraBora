@@ -27,16 +27,22 @@ class GameLogic(ChildLogic):
             self.shared.characters.get_cell(c.id),
         )
         path = current_cell_code + data  # check pathfinding?
-        self.outputs.put(
-            ";".join(
-                [
-                    f"GA{game_action_id}",
-                    "1",
-                    str(c.id),
-                    f"a{path}",
-                ],
-            )
-        )
+        map_id = self.shared.characters.maps.get(c.id)
+        clients = self.shared.maps.list_clients_on_map(map_id)
+        print(clients)
+        for client in clients:
+            if client:
+                client.outputs.put(
+                    ";".join(
+                        [
+                            f"GA{game_action_id}",
+                            "1",
+                            str(c.id),
+                            f"a{path}",
+                        ],
+                    )
+                )
+                client.flush()
 
     def handle_action(self, data):
         action_id = int(data[:3])

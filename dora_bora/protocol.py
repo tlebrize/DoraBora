@@ -6,6 +6,7 @@ class BaseProtocol(LineReceiver):
 
     def __init__(self, logic):
         self.logic = logic
+        self.logic.register(self)
 
     def write(self, message):
         print(f"SEND > [{self.logic.__class__.__name__}]\t{repr(message)}")
@@ -25,3 +26,7 @@ class BaseProtocol(LineReceiver):
         while not self.logic.inputs.empty():
             self.logic.handle_input()
         self.send_all()
+
+    def connectionLost(self, reason):
+        print("Connection lost because", reason)
+        self.logic.end()

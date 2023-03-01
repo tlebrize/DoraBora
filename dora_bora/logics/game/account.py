@@ -98,6 +98,7 @@ class AccountLogic(ChildLogic):
     def handle_join_game(self, data):
         id_ = int(data)
         self.root.character = self.db.characters.get(id_)
+        self.shared.clients.register_character(id_, self.root)
         c = self.root.character
         # check seller ?
         # check mount

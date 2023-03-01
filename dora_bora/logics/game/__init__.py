@@ -1,6 +1,7 @@
-from dora_bora.non_blocking_queue import NonBlockingQueue
 from dora_bora.database_accessor import DatabaseAccessor
+from dora_bora.logics.base_logic import BaseLogic
 from dora_bora.logics.exceptions import NotHandled
+from dora_bora.non_blocking_queue import NonBlockingQueue
 from dora_bora.shared_state import get_shared_state
 
 from .account import AccountLogic
@@ -10,12 +11,10 @@ from .game import GameLogic
 from .conquest import ConquestLogic
 
 
-class RootGameLogic:
+class RootGameLogic(BaseLogic):
     def __init__(self, server_id):
+        super().__init__()
         self.server_id = server_id
-        self.inputs = NonBlockingQueue()
-        self.outputs = NonBlockingQueue()
-        self.db = DatabaseAccessor()
         self.shared = get_shared_state()
 
         self.handlers = {
@@ -39,3 +38,12 @@ class RootGameLogic:
                 handler.handle_input(message[1:])
         except NotHandled as exc:
             print("Not Handled", exc)
+
+    def end(self):
+        if getattr(self, "character"):
+            if self.shared.clients.remove_character(self.character.id):
+                print("Cleanly disconnected.")
+            else:
+                print("Was already disconnected.")
+        else:
+            print("Wasn't connected.")

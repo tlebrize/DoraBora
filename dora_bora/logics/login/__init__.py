@@ -2,18 +2,18 @@ import string
 import random
 
 from dora_bora.constants import POLICY
-from dora_bora.non_blocking_queue import NonBlockingQueue
-from dora_bora.database_accessor import DatabaseAccessor
 from dora_bora.datamodel import AccountState
+from dora_bora.logics.base_logic import BaseLogic
+from dora_bora.logics.exceptions import (
+    AccountNotFound,
+    InvalidVersion,
+    ServerNotFound,
+)
 
-from .exceptions import AccountNotFound, InvalidVersion, ServerNotFound
 
-
-class LoginLogic:
+class LoginLogic(BaseLogic):
     def __init__(self):
-        self.inputs = NonBlockingQueue()
-        self.outputs = NonBlockingQueue()
-        self.db = DatabaseAccessor()
+        super().__init__()
         self.step = 0
 
     def start(self):
