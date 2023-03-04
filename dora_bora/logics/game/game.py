@@ -2,7 +2,7 @@ from dora_bora import game_actions
 from dora_bora.logics.exceptions import NotHandled
 from dora_bora.datamodel import AccountState, Gender, Class
 from dora_bora.parsers import decode_cell_b64, encode_cell_b64
-
+from dora_bora.formatters import game
 
 from .child import ChildLogic
 
@@ -29,7 +29,6 @@ class GameLogic(ChildLogic):
         path = current_cell_code + data  # check pathfinding?
         map_id = self.shared.characters.maps.get(c.id)
         clients = self.shared.maps.list_clients_on_map(map_id)
-        print(clients)
         for client in clients:
             if client:
                 client.outputs.put(
@@ -143,37 +142,18 @@ class GameLogic(ChildLogic):
             self.root.map = self.db.maps.get(self.root.character.map_id)
 
         characters = self.shared.maps.characters.get(self.root.map.id, [])
-        for character_id in characters:
-            c = self.db.characters.get(character_id)
-            cellid = self.shared.characters.get_cell(c.id)
-            self.outputs.put(
-                ";".join(
-                    map(
-                        str,
-                        [
-                            f"GM|+{cellid}",  # cellid
-                            1,  # orientation
-                            0,  # ? level ?
-                            c.id,
-                            c.name,
-                            c.class_,
-                            f"{c.get_gfxid()}^100x100",  # gfxid^size
-                            c.gender,
-                            f"",  # -1,0,0,0
-                            # alignement,?,wings,grade
-                            *c.get_colors(),
-                            ",,,,",  # equipment
-                            "",  # Emote
-                            "",  # Emote Timer
-                            "",  # Guild Name
-                            "",  # Guild Emblem
-                            "",  # ?
-                            8,  # Speed
-                            "",  # Close
-                        ],
+
+        clients = self.shared.maps.list_clients_on_map(self.root.map.id)
+        for client in clients:
+            if client:
+                for character_id in characters:
+                    client.outputs.put(
+                        game.GM(
+                            self.db.characters.get(character_id),
+                            self.shared.characters.get_cell(character_id),
+                        )
                     )
-                )
-            )
+                    client.flush()
 
         # mobs
         # npcs
