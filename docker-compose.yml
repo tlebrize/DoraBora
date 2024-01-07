@@ -1,41 +1,79 @@
 version: '3.5'
 
 services:
-  postgres:
-    container_name: postgres_container
+  db:
     image: postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      PGDATA: /data/postgres
     volumes:
-       - postgres:/data/postgres
-    ports:
-      - "5432:5432"
-    networks:
-      - postgres
-    restart: unless-stopped
-  
-  pgadmin:
-    container_name: pgadmin_container
-    image: dpage/pgadmin4
+      - ./db/data:/var/lib/postgresql/data
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@dorabora.db}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-password}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-       - pgadmin:/var/lib/pgadmin
-
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    networks:
-      - postgres
-    restart: unless-stopped
+      - "0.0.0.0:5432:5432"
+    command: ["postgres", "-c", "log_statement=all"]
 
-networks:
-  postgres:
-    driver: bridge
+  redis:
+    image: redis:6.2-alpine
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass password
+    volumes:
+      - redis:/data
+
+  management:
+    build:
+      context: ./management
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./management:/workspace
+    ports:
+      - "5050:5050"
+    env_file: ./management/.env
+    depends_on:
+      - db
+      - redis
+    restart: on-failure
+    user: "1000:1000"
+
+  login:
+    build:
+      context: ./login
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./login:/workspace
+    ports:
+      - "5051:5051"
+    env_file: ./login/.env
+    depends_on:
+      - db
+      - redis
+    restart: on-failure
+    user: "1000:1000"
+
+  game:
+    build:
+      context: ./game
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./game:/workspace
+    ports:
+      - "5052:5052"
+    env_file: ./game/.env
+    depends_on:
+      - db
+      - redis
+    restart: on-failure
+    user: "1000:1000"
+
+  static:
+    image: nginx
+    ports:
+        - 8000:80
+    volumes:
+        - ./static:/usr/share/nginx/html
 
 volumes:
-    postgres:
-    pgadmin:
+  redis:
+    driver: local

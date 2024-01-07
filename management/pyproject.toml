@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "Management"
+version = "0.1.0"
+description = "DoraBora's mangement service."
+authors = ["tlebrize <lebrize.t@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.0.1"
+psycopg = {extras = ["binary"], version = "^3.1.17"}
+django-redis = "^5.4.0"
+django-configurations = {extras = ["cache", "database", "email", "search"], version = "^2.5"}
+whitenoise = "^6.6.0"
+djangorestframework = "^3.14.0"
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.19.0"
+
+[tool.black]
+line-length = 120
+exclude = "migrations/"
+
+[tool.ruff]
+select = [ # https://docs.astral.sh/ruff/rules/
+	"F",   # PyFlakes
+	"E",   # PyCodeStyle
+	"W",   # PyCodeStyle
+	"I",   # Isort
+	"DJ",  # Flake8-Django
+]
+fixable = ["ALL"]
+line-length = 120
+target-version = "py311"
+unsafe-fixes = true
+exclude = ["migrations"]
+
+[tool.pytest.ini_options]
+env = [
+	"DJANGO_SETTINGS_MODULE = Management.settings",
+	"DJANGO_CONFIGURATION = Test"
+]
+python_files = ["test_*.py"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
