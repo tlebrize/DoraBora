@@ -19,6 +19,7 @@ class Account:
     is_game_master: bool
     security_question: str
     community: str
+    switch_token: str
 
     def format_is_game_master(self):
         return str(int(self.is_game_master))

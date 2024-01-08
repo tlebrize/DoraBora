@@ -9,4 +9,7 @@ login_router.register("account", views.AccountViewSet)
 login_router.register("server", views.ServerViewSet)
 
 login_urls = login_router.urls
-login_urls += [path("token/", token_views.obtain_auth_token)]
+login_urls += [
+    path("token/", token_views.obtain_auth_token),
+    path("switch/", views.switch_view),
+]

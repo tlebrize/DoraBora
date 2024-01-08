@@ -1,6 +1,7 @@
 import asyncio, random, string
 from service.password import decrypt
 from service.management import Management
+from enum import Enum
 
 POLICY = """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -12,13 +13,24 @@ POLICY = """
 """.strip()
 
 
+class LoginStep(int, Enum):
+    QUIT = 0
+    START = 1
+    VERSION_CHECK = 2
+    CONNECTION = 3
+    PASSWORD = 4
+    SWITCH = 5
+    SEND_INFO = 6
+    HANDLE_INPUTS = 7
+
+
 class Service:
     def __init__(self, reader, writer, config):
         self.reader = reader
         self.writer = writer
         self.config = config
         self.management = Management(self.config)
-        self.step = 0
+        self.step = LoginStep.START
 
     async def write(self, message: str, drain: bool = False):
         print(">", message)
@@ -32,49 +44,61 @@ class Service:
         return line
 
     async def on_connect(self):
-        while True:
-            if self.step == 0:
-                print("connecting")
+        keep_going = True
+        while self.step != LoginStep.QUIT:
+            if self.step == LoginStep.START:
                 await self.write(POLICY)
                 self.key = "".join(random.choices(string.ascii_lowercase, k=32))
                 await self.write(f"HC{self.key}", drain=True)
-                self.step = 1
+                self.step = LoginStep.VERSION_CHECK
 
-            if self.step == 1:
-                print("checking version")
+            if self.step == LoginStep.VERSION_CHECK:
                 version = await self.readline()
                 self.check_version(version)
-                self.step = 2
+                self.step = LoginStep.CONNECTION
 
-            if self.step == 2:
-                print("authenticating")
-                self.username = await self.readline()
+            if self.step == LoginStep.CONNECTION:
+                packet = await self.readline()
+                if packet == "#S":
+                    self.step = LoginStep.SWITCH
+                else:
+                    self.username = packet
+                    self.step = LoginStep.PASSWORD
+
+            if self.step == LoginStep.PASSWORD:
                 password = await self.readline()
-                await self.login(password)
-                self.step = 3
+                await self.password_login(password)
+                self.step = LoginStep.SEND_INFO
 
-            if self.step == 3:
-                print("sending login infos")
+            if self.step == LoginStep.SWITCH:
+                switch_token = await self.readline()
+                await self.switch_login(switch_token)
+                self.step = LoginStep.SEND_INFO
+
+            if self.step == LoginStep.SEND_INFO:
                 await self.send_logged_in_info()
-                self.step = 4
+                self.step = LoginStep.HANDLE_INPUTS
 
-            if self.step == 4:
-                print("handling server info")
-                await self.handle_server_input()
+            if self.step == LoginStep.HANDLE_INPUTS:
+                self.step = await self.handle_server_input()
 
     def check_version(self, version):
         if not "1.39.8e" in version:
             raise Exception(f"Invalid Version : {version}")
 
-    async def login(self, password_hash):
+    async def password_login(self, password_hash):
         check, password_hash = password_hash.split("#1")
         if check:
             raise Exception("Invalid password format")
 
         decrypted_password = decrypt(password_hash, self.key)
 
-        if not (await self.management.login(self.username, decrypted_password)):
-            raise Exception("Invalid login.")
+        if not (await self.management.password_login(self.username, decrypted_password)):
+            raise Exception("Invalid password")
+
+    async def switch_login(self, switch_token):
+        if not (await self.management.switch_login(switch_token[:196])):
+            raise Exception("Invalid switch_token")
 
     async def send_logged_in_info(self):
         account, server_list = await asyncio.gather(
@@ -99,13 +123,18 @@ class Service:
             await self.send_server_list()
         elif msg[:2] == "AX":
             await self.handle_server_connection(int(msg[2:]))
+        elif msg[:2] == "Ai":
+            await self.handle_switch_token(msg[2:])  # maybe ?
         # if msg == "AF": Friend list
         # if msg == "Ap": ???
         else:
-            print("not handled", repr(msg))
             if not msg:
                 self.writer.close()
-                exit(0)
+                return LoginStep.QUIT
+            else:
+                print("! not handled")
+
+        return LoginStep.HANDLE_INPUTS
 
     async def send_server_list(self):
         account, server_list = await asyncio.gather(
@@ -136,3 +165,7 @@ class Service:
             self.write("AYK" + server.format_connection()),
             self.management.set_account_in_login(),
         )
+
+    async def handle_switch_token(self, token):
+        # unsure about what this really does.
+        await self.management.set_account_switch_token(token[:196])

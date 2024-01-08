@@ -6,14 +6,23 @@ from Login.models import Account
 from Login.serializers import AccountSerializer
 
 
-class AccountViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin):
+class AccountViewSet(
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
+    # def get_queryset(self):
+    #     return self.queryset.filter(dj_user=self.request.user)
 
-    def get_queryset(self):
-        return Account.objects.filter(dj_user=self.request.user)
+    permission_classes = [permissions.AllowAny]  # needed for get_account_by_id
 
     @action(detail=False, methods=["get"])
     def me(self, request):
-        return Response(self.serializer_class(instance=self.get_queryset().get()).data)
+        return Response(
+            self.serializer_class(
+                instance=self.queryset.filter(dj_user=self.request.user).get(),
+            ).data,
+        )

@@ -32,6 +32,12 @@ class Character(models.Model):
         on_delete=models.CASCADE,
         null=False,
     )
+    map = models.ForeignKey(
+        "Map.Map",
+        related_name="characters",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
     _class = models.IntegerField(choices=ClassChoices, null=False)
     colors = models.JSONField(default=list, null=False)
     energy = models.IntegerField(default=10000, null=False)

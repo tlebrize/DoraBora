@@ -20,6 +20,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "is_game_master",
             "security_question",
             "community",
+            "switch_token",
         ]
         read_only_fields = [
             "id",

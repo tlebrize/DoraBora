@@ -10,10 +10,23 @@ class Management:
         self.account = None
         self.servers = []
 
-    async def login(self, username, password):
+    async def password_login(self, username, password):
         response = await self.client.post(
             "/login/token/",
             json={"username": username, "password": password},
+        )
+        response.raise_for_status()
+        self.token = response.json().get("token")
+        if not self.token:
+            raise Exception("Login failed.")
+        self.client.headers["Authorization"] = f"Token {self.token}"
+
+        return True
+
+    async def switch_login(self, switch_token):
+        response = await self.client.post(
+            "/login/switch/",
+            json={"switch_token": switch_token},
         )
         response.raise_for_status()
         self.token = response.json().get("token")
@@ -41,5 +54,16 @@ class Management:
 
     async def set_account_in_login(self):
         account_id = (await self.get_account()).id
-        response = await self.client.patch(f"/login/account/{account_id}/", json={"state": AccountState.IN_LOGIN})
+        response = await self.client.patch(
+            f"/login/account/{account_id}/",
+            json={"state": AccountState.IN_LOGIN},
+        )
+        response.raise_for_status()
+
+    async def set_account_switch_token(self, token):
+        account_id = (await self.get_account()).id
+        response = await self.client.patch(
+            f"/login/account/{account_id}/",
+            json={"switch_token": token},
+        )
         response.raise_for_status()

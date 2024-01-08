@@ -37,6 +37,7 @@ class Account(models.Model):
         choices=CommunityChoices,
         null=False,
     )
+    switch_token = models.CharField(max_length=1023, null=True, default=True)
 
     def __str__(self):
         return f"{self.nickname} ({self.dj_user})"

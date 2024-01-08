@@ -2,4 +2,9 @@ from django.contrib import admin
 
 from Character.models import Character
 
-admin.site.register(Character)
+
+class CharacterAdmin(admin.ModelAdmin):
+    raw_id_fields = ["map"]
+
+
+admin.site.register(Character, CharacterAdmin)

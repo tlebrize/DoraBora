@@ -29,6 +29,7 @@ class Dev(Configuration):
         "rest_framework.authtoken",
         "Login",
         "Character",
+        "Map",
     ]
 
     MIDDLEWARE = [
