@@ -91,10 +91,21 @@ async def create_character(service, data):
     await send_character_list(service)
 
 
+async def delete_character(service, data):
+    id_, _ = data.split("|")
+    if int(id_) in [c.id for c in service.management.character_list.characters]:
+        await service.management.delete_character(id_)
+        await send_character_list(service)
+    else:
+        await service.write("ADE")
+
+
 async def account_handler(service, command):
     match command[0]:
         case "A":
             await create_character(service, command[1:])
+        case "D":
+            await delete_character(service, command[1:])
         case "T":
             await connect(service, command[1:])
         case "k":

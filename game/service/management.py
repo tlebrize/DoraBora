@@ -57,7 +57,8 @@ class Management:
         if (not self.character_list) or force:
             account_id = (await self.get_account()).id
             response = await self.client.get(
-                f"/character/character/?account_id={account_id}&server_id={self.server_id}"
+                f"/character/character/",
+                params={"account_id": account_id, "server_id": self.server_id},
             )
             response.raise_for_status()
             self.character_list = CharacterList([Character(**data) for data in response.json()])
@@ -93,4 +94,14 @@ class Management:
         response = await self.client.post(f"/character/character/", json=data)
         response.raise_for_status()
         self.character = Character(**response.json())
+        self.character_list = []
+
+    async def delete_character(self, id_):
+        account_id = (await self.get_account()).id
+        response = await self.client.delete(
+            f"/character/character/{id_}/",
+            params={"account_id": account_id, "server_id": self.server_id},
+        )
+        response.raise_for_status()
+        self.character = None
         self.character_list = []
