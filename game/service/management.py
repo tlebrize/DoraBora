@@ -17,7 +17,7 @@ class Management:
         self.client = httpx.AsyncClient(base_url=config.MANAGEMENT_BASE_URL)
         self.server_id = config.SERVER_ID
         self.account = None
-        self.characters = []
+        self.character_list = []
         self.current_character = None
         self.current_map = None
 
@@ -54,23 +54,24 @@ class Management:
         return self.account
 
     async def list_characters(self, force=False):
-        if (not self.characters) or force:
+        if (not self.character_list) or force:
             account_id = (await self.get_account()).id
             response = await self.client.get(
                 f"/character/character/?account_id={account_id}&server_id={self.server_id}"
             )
             response.raise_for_status()
-            self.characters = CharacterList([Character(**data) for data in response.json()])
+            self.character_list = CharacterList([Character(**data) for data in response.json()])
 
-        return self.characters
+        return self.character_list
 
     async def set_current_character(self, character_id, force=False):
-        if (not self.current_character) or force:
-            character_list = await self.list_characters(force=force)
-            for character in character_list.characters:
-                if character.id == character_id:
-                    self.current_character = character
-                    break
+        if (not self.character_list) or force:
+            await self.list_characters(force=force)
+
+        for character in self.character_list.characters:
+            if character.id == character_id:
+                self.current_character = character
+                break
 
         return self.current_character
 
@@ -79,3 +80,17 @@ class Management:
         response.raise_for_status()
         self.current_map = Map(**response.json())
         return self.current_map
+
+    async def create_character(self, name, gender, _class, colors):
+        data = {
+            "server": self.server_id,
+            "account": self.account.id,
+            "name": name,
+            "gender": gender,
+            "_class": _class,
+            "colors": colors,
+        }
+        response = await self.client.post(f"/character/character/", json=data)
+        response.raise_for_status()
+        self.character = Character(**response.json())
+        self.character_list = []

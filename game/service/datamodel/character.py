@@ -24,10 +24,10 @@ class Class(int, Enum):
 
 @dataclass
 class Character:
-    account_id: int
-    map_id: int
+    account: int
+    map: int
     map_dofus_id: int
-    server_id: int
+    server: int
     _class: Class
     colors: [int]
     energy: int
@@ -58,7 +58,7 @@ class Character:
                     *self.get_colors(),
                     ",,,,",  # items (getGMStuffString ?)
                     0,  # seller mode
-                    self.server_id,
+                    self.server,
                     0,  # is dead ?
                 ],
             )

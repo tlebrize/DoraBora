@@ -3,7 +3,7 @@ from Character.models import Character
 from Character.serializers import CharacterSerializer
 
 
-class CharacterViewSet(viewsets.ReadOnlyModelViewSet):
+class CharacterViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
     queryset = Character.objects.all()
     serializer_class = CharacterSerializer
     permission_classes = [permissions.AllowAny]

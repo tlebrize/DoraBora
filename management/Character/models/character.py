@@ -1,4 +1,7 @@
 from django.db import models
+import logging
+
+logger = logging.getLogger("django")
 
 
 class Character(models.Model):

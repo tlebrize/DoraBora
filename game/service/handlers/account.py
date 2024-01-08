@@ -1,5 +1,5 @@
 import asyncio
-from service.datamodel import AccountState
+from service.datamodel import AccountState, Gender, Class
 
 
 async def connect(service, data):
@@ -49,7 +49,7 @@ async def send_queue_position(service):  # Disabled
 
 async def join_game(service, character_id):
     c = await service.management.set_current_character(character_id)
-    current_map = await service.management.set_current_map(c.map_id)
+    current_map = await service.management.set_current_map(c.map)
 
     # check seller ?
     # check mount
@@ -79,8 +79,22 @@ async def join_game(service, character_id):
     await service.write("Im0153;127.0.0.1")  # IP msg
 
 
+async def create_character(service, data):
+    name, _class, gender, c1, c2, c3 = data.split("|")
+    await service.management.create_character(
+        name=name,
+        gender=Gender(int(gender)),
+        _class=Class(int(_class)),
+        colors=[int(c1), int(c2), int(c3)],
+    )
+    await service.write("AAK")  # create perso ok
+    await send_character_list(service)
+
+
 async def account_handler(service, command):
     match command[0]:
+        case "A":
+            await create_character(service, command[1:])
         case "T":
             await connect(service, command[1:])
         case "k":
