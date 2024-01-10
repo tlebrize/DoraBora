@@ -1,3 +1,6 @@
+from service.shared_state import list_characters_on_map
+
+
 async def send_game_create(service, _unused):
     c = service.management.current_character
     await service.write(f"GCK|1|{c.name}")
@@ -67,7 +70,7 @@ async def send_game_create(service, _unused):
     await send_extra_informations(service)
 
 
-async def send_extra_informations(service):
+async def send_extra_informations(s):
     # if not getattr(self.root, "map"):
     #     self.root.map = self.db.maps.get(self.root.character.map_id)
 
@@ -85,12 +88,14 @@ async def send_extra_informations(service):
     #             )
     #             client.flush()
 
+    print(await list_characters_on_map(s, s.management.current_map.id))
+
     # mobs
     # npcs
     # perco
     # map objects? GAME_SEND_MAP_OBJECTS_GDS_PACKETS
-    await service.write("GDK")  # gdk ?
-    await service.write("fC0")  # fight counts
+    await s.write("GDK")  # gdk ?
+    await s.write("fC0")  # fight counts
     # prisms
     # merchants
     # fights

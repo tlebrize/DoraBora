@@ -1,14 +1,13 @@
 [tool.poetry]
-name = "Login"
+name = "Integration"
 version = "0.1.0"
-description = "DoraBora's login service."
+description = "DoraBora's integration testing service."
 authors = ["tlebrize <lebrize.t@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-httpx = "^0.26.0"
-redis = {extras = ["hiredis"], version = "^5.0.1"}
-
+pytest = "^7.4.4"
+pytest-asyncio = "^0.23.3"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.19.0"

@@ -12,6 +12,7 @@ services:
     ports:
       - "0.0.0.0:5432:5432"
     command: ["postgres", "-c", "log_statement=all"]
+    restart: on-failure
 
   redis:
     image: redis:6.2-alpine
@@ -47,8 +48,8 @@ services:
       - "5051:5051"
     env_file: ./login/.env
     depends_on:
-      - db
-      - redis
+      - management
+      - static
     restart: on-failure
     user: "1000:1000"
 
@@ -62,8 +63,8 @@ services:
       - "5052:5052"
     env_file: ./game/.env
     depends_on:
-      - db
-      - redis
+      - management
+      - static
     restart: on-failure
     user: "1000:1000"
 
@@ -73,6 +74,22 @@ services:
         - 8000:80
     volumes:
         - ./static:/usr/share/nginx/html
+    restart: on-failure
+
+  integration:
+    build:
+      context: ./integration
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./integration:/workspace
+    env_file: ./integration/.env
+    depends_on:
+      - management
+      - static
+      - game
+      - login
+    restart: on-failure
+    user: "1000:1000"
 
 volumes:
   redis:

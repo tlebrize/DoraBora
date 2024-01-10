@@ -8,3 +8,4 @@ class Config:
     SERVER_PORT: int = os.environ.get("SERVER_PORT")
     SERVER_TOKEN: str = os.environ.get("SERVER_TOKEN")
     SERVER_ID: int = os.environ.get("SERVER_ID")
+    REDIS_URL: str = os.environ.get("REDIS_URL")

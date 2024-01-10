@@ -32,4 +32,4 @@ async def run_server():
         await set_server_state(ServerState.OFFLINE)  # this does not work
 
 
-asyncio.run(run_server())
+asyncio.run(run_server(), debug=True)

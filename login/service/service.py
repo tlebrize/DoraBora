@@ -39,12 +39,11 @@ class Service:
             await self.writer.drain()
 
     async def readline(self) -> str:
-        line = (await self.reader.readline()).decode().strip("\x00\n")
+        line = (await self.reader.readline()).decode().strip("\0\n")
         print("<", repr(line))
         return line
 
     async def on_connect(self):
-        keep_going = True
         while self.step != LoginStep.QUIT:
             if self.step == LoginStep.START:
                 await self.write(POLICY)
@@ -159,7 +158,7 @@ class Service:
         try:
             server = next(filter(lambda s: s.id == server_id, server_list.servers))
         except StopIteration:
-            raise Exception(f"server not found {id_}")
+            raise Exception(f"server not found {server_id}")
 
         await asyncio.gather(
             self.write("AYK" + server.format_connection()),

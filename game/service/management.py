@@ -76,7 +76,7 @@ class Management:
 
         return self.current_character
 
-    async def set_current_map(self, map_id):
+    async def get_current_map(self, map_id):
         response = await self.client.get(f"/map/map/{map_id}/")
         response.raise_for_status()
         self.current_map = Map(**response.json())

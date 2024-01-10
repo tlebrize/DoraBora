@@ -37,4 +37,4 @@ class ServerList:
     servers: [Server]
 
     def format_login_list(self):
-        return "|".join([f"{s.id};{s.format_state()};110;0" for s in self.servers])
+        return "|".join([f"{s.id};{s.format_state()};110;1" for s in self.servers])

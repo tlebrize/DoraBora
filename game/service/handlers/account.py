@@ -1,5 +1,7 @@
 import asyncio
 from service.datamodel import AccountState, Gender, Class
+from service.exchange import create_exchange_task
+from service.shared_state import add_character_to_map
 
 
 async def connect(service, data):
@@ -44,39 +46,42 @@ async def send_character_list(service):
 
 
 async def send_queue_position(service):  # Disabled
-    await service.write(f"Af1|1|1|1|{service.management.server_id}")
+    await service.write(f"Af1|1|1|1|{service.server_id}")
 
 
-async def join_game(service, character_id):
-    c = await service.management.set_current_character(character_id)
-    current_map = await service.management.set_current_map(c.map)
+async def join_game(s, character_id):
+    c = await s.management.set_current_character(character_id)
+    current_map = await s.management.get_current_map(c.map)
+    await add_character_to_map(s, current_map.id, c.id)
 
     # check seller ?
     # check mount
-    await service.write("Rx0")  # mount exp
-    await service.write(
+    await s.write("Rx0")  # mount exp
+    await s.write(
         f"ASK|{c.id}|{c.name}|{c.level}|{c._class}|{c.gender}|"
         f"{c.get_gfxid()}" + "|".join(map(str, c.get_colors())) + "|"
         # Items
     )
     # check fight
-    await service.write("ILS2000")  # No fight
+    await s.write("ILS2000")  # No fight
     # check jobs
-    await service.write("ZS-1")  # Alignment neutral
-    await service.write("cC+i*")  # chats enabled
+    await s.write("ZS-1")  # Alignment neutral
+    await s.write("cC+i*")  # chats enabled
     # check guild
-    await service.write("al|")  # Zone alignment
-    await service.write("eL0|0")  # Emotes
-    await service.write("AR6bk")  # Restrictions
-    await service.write(c.format_pods())  # used_pods|max_pods
-    await service.write(current_map.format_map_data())
+    await s.write("al|")  # Zone alignment
+    await s.write("eL0|0")  # Emotes
+    await s.write("AR6bk")  # Restrictions
+    await s.write(c.format_pods())  # used_pods|max_pods
+    await s.write(current_map.format_map_data())
     # self.shared.characters.move_to_map(c.id, self.root.map.id)
     # self.shared.characters.move_to_cell(c.id, 210)
-    await service.write("fC0")  # fight counts
-    await service.write("FO-")  # - = don't see friend connection / +
-    await service.write("SL1~1~1;2~1~2;3~2~4;")  # Spell list id~level~placement;
-    await service.write("Im189")  # Welcome message, non-existant
-    await service.write("Im0153;127.0.0.1")  # IP msg
+    await s.write("fC0")  # fight counts
+    await s.write("FO-")  # - = don't see friend connection / +
+    await s.write("SL1~1~1;2~1~2;3~2~4;")  # Spell list id~level~placement;
+    await s.write("Im189")  # Welcome message, non-existant
+    await s.write("Im0153;127.0.0.1")  # IP msg
+    await s.create_server_exchange()
+    await s.broadcast(f"server.{s.server_id}", "Hello")
 
 
 async def create_character(service, data):
