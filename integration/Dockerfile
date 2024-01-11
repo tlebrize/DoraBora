@@ -29,4 +29,4 @@ COPY ./ /workspace/
 
 EXPOSE 5050
 
-CMD poetry run python test_client.py
+CMD poetry run pytest .

@@ -6,12 +6,13 @@ from service.shared_state import add_character_to_map
 
 async def connect(service, data):
     account = await service.management.get_account_by_id(int(data))
-    if account.state != AccountState.IN_LOGIN:
+    if account.state != AccountState.IN_LOGIN.value:
+        print(str(account.state), str(AccountState.IN_LOGIN.value))
         raise Exception("Account not in login.")
 
     await asyncio.gather(
         service.write("ATK0"),
-        service.management.set_account_state(AccountState.IN_GAME),
+        service.management.set_account_state(AccountState.IN_GAME.value),
     )
 
 

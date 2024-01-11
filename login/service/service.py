@@ -33,13 +33,13 @@ class Service:
         self.step = LoginStep.START
 
     async def write(self, message: str, drain: bool = False):
-        print(">", message)
+        print(">", message.replace("\0", "\t\n"))
         self.writer.write(message.encode() + b"\0")
         if drain:
             await self.writer.drain()
 
     async def readline(self) -> str:
-        line = (await self.reader.readline()).decode().strip("\0\n")
+        line = (await self.reader.readline()).strip(b"\0\n").decode()
         print("<", repr(line))
         return line
 
@@ -153,17 +153,18 @@ class Service:
         await self.write("AxK" + subscribed + server_characters)
 
     async def handle_server_connection(self, server_id):
-        server_list = await self.management.list_servers()
+        account, server_list = await asyncio.gather(
+            self.management.get_account(),
+            self.management.list_servers(),
+        )
 
         try:
             server = next(filter(lambda s: s.id == server_id, server_list.servers))
         except StopIteration:
             raise Exception(f"server not found {server_id}")
 
-        await asyncio.gather(
-            self.write("AYK" + server.format_connection()),
-            self.management.set_account_in_login(),
-        )
+        await self.management.set_account_in_login()
+        await self.write(f"AYK{server.format_connection()};{account.id}")
 
     async def handle_switch_token(self, token):
         # unsure about what this really does.

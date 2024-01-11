@@ -29,7 +29,7 @@ class Server:
             raise Exception(f"Invalid state for {self.id} : {self.state}.")
 
     def format_connection(self):
-        return f"{self.host}:{self.port};{self.format_state()}"
+        return f"{self.host}:{self.port}"
 
 
 @dataclass
