@@ -7,8 +7,7 @@ from Login.models import Account
 
 @api_view(["POST"])
 def switch_view(request):
-    print(request.data)
-    token = Token.objects.get(
-        user__account__switch_token=request.data.get("switch_token"),
-    )
-    return Response({"token": token.key})
+    switch_token = request.data.get("switch_token")
+    key = Token.objects.get(user__account__switch_token=switch_token).key
+    Account.objects.filter(switch_token=switch_token).update(switch_token=None)
+    return Response({"token": key})

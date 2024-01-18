@@ -3,6 +3,14 @@
 A python dofus server.
 
 
+## TODO
+
+- harden login / states
+- finish tests
+- Rename management
+- handle multiple server exchange tasks
+- handlers architecture ?
+
 ## Architecture
 
 DoraBora is made of multiple services:

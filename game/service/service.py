@@ -59,11 +59,12 @@ class Service:
         while True:
             command = await self.readline()
             if not command:
+                await disconnect(self)
                 break
 
             match command:
                 case "HS":
-                    await disconnect(self)
+                    await disconnect(self, switch=True)
                     break
 
             match command[0]:

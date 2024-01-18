@@ -14,12 +14,24 @@ from service.datamodel import (
 class Management:
     def __init__(self, config):
         self.config = config
-        self.client = httpx.AsyncClient(base_url=config.MANAGEMENT_BASE_URL)
+        self._client = httpx.AsyncClient(base_url=config.MANAGEMENT_BASE_URL)
         self.server_id = config.SERVER_ID
         self.account = None
         self.character_list = []
         self.current_character = None
         self.current_map = None
+
+    async def get(self, *args, **kwargs):
+        return await self.request("get", *args, **kwargs)
+
+    async def post(self, *args, **kwargs):
+        return await self.request("post", *args, **kwargs)
+
+    async def patch(self, *args, **kwargs):
+        return await self.request("patch", *args, **kwargs)
+
+    async def delete(self, *args, **kwargs):
+        return await self.request("delete", *args, **kwargs)
 
     async def request(self, method, path, **kwargs):
         if kwargs:
@@ -31,45 +43,56 @@ class Management:
             print()
         else:
             print(f"$ {method}:{path}")
-        response = await getattr(self.client, method)(path, **kwargs)
-
+        response = await getattr(self._client, method)(path, **kwargs)
         response.raise_for_status()
-        return response.json()
+
+        if response.headers.get("Content-Type") == "application/json":
+            return response.json()
+        else:
+            return response
 
     async def login(self, username, password):
-        response = await self.request(
-            "post",
+        response = await self.post(
             "/login/token/",
             json={"username": username, "password": password},
         )
         self.token = response.get("token")
         if not self.token:
             raise Exception("Login failed.")
-        self.client.headers["Authorization"] = f"Token {self.token}"
+        self._client.headers["Authorization"] = f"Token {self.token}"
 
         return True
 
     async def get_account(self, force=False):
         if (not self.account) or force:
-            response = await self.request("get", "/login/account/me/")
+            response = await self.get("/login/account/me/")
             self.account = Account(**response)
         return self.account
 
     async def set_account_state(self, state):
         account_id = (await self.get_account()).id
-        response = await self.client.patch(f"/login/account/{account_id}/", json={"state": state})
+        response = await self.patch(
+            f"/login/account/{account_id}/",
+            json={"state": state},
+        )
+
+    async def set_switch_token(self, token):
+        account_id = (await self.get_account()).id
+        response = await self.patch(
+            f"/login/account/{account_id}/",
+            json={"switch_token": token},
+        )
 
     async def get_account_by_id(self, account_id):
         # Insecure
-        response = await self.request("get", f"/login/account/{account_id}/")
+        response = await self.get(f"/login/account/{account_id}/")
         self.account = Account(**response)
         return self.account
 
     async def list_characters(self, force=False):
         if (not self.character_list) or force:
-            account_id = (await self.get_account()).id
-            response = await self.request(
-                "get",
+            account_id = (await self.get_account(force=force)).id
+            response = await self.get(
                 f"/character/character/",
                 params={"account_id": account_id, "server_id": self.server_id},
             )
@@ -77,7 +100,7 @@ class Management:
 
         return self.character_list
 
-    async def set_current_character(self, character_id, force=False):
+    async def init_current_character(self, character_id, force=False):
         if (not self.character_list) or force:
             await self.list_characters(force=force)
 
@@ -86,11 +109,16 @@ class Management:
                 self.current_character = character
                 break
 
+        if not self.current_character:
+            raise Exception("Not character found for given id.")
+
         return self.current_character
 
-    async def get_current_map(self, map_id):
-        response = await self.request("get", f"/map/map/{map_id}/")
-        self.current_map = Map(**response)
+    async def init_current_map(self, map_id, force=False):
+        if (not self.current_map) or force:
+            response = await self.get(f"/map/map/{map_id}/")
+            self.current_map = Map(**response)
+
         return self.current_map
 
     async def create_character(self, name, gender, _class, colors):
@@ -102,16 +130,15 @@ class Management:
             "_class": _class,
             "colors": colors,
         }
-        response = await self.request("post", f"/character/character/", json=data)
+        response = await self.post(f"/character/character/", json=data)
         self.character = Character(**response)
-        self.character_list = []
+        self.character_list = None
 
     async def delete_character(self, id_):
         account_id = (await self.get_account()).id
-        response = await self.request(
-            "delete",
+        response = await self.delete(
             f"/character/character/{id_}/",
             params={"account_id": account_id, "server_id": self.server_id},
         )
         self.character = None
-        self.character_list = []
+        self.character_list = None

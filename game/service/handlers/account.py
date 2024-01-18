@@ -17,15 +17,15 @@ async def connect(service, data):
 
 
 async def set_key_index(_, key_index):  # Unused
-    print(key_index)
+    pass
 
 
-async def send_region_version(service):  # Unused
+async def send_region_version(service):  # ???
     await service.write(f"AV0")
 
 
 async def set_language(_, lang_code):  # Unused
-    print(lang_code)
+    pass
 
 
 async def send_character_list(service):
@@ -51,8 +51,8 @@ async def send_queue_position(service):  # Disabled
 
 
 async def join_game(s, character_id):
-    c = await s.management.set_current_character(character_id)
-    current_map = await s.management.get_current_map(c.map)
+    c = await s.management.init_current_character(character_id)
+    current_map = await s.management.init_current_map(c.map)
     await add_character_to_map(s, current_map.id, c.id)
 
     # check seller ?
@@ -99,7 +99,8 @@ async def create_character(service, data):
 
 async def delete_character(service, data):
     id_, _ = data.split("|")
-    if int(id_) in [c.id for c in service.management.character_list.characters]:
+    characters = (await service.management.list_characters()).characters
+    if int(id_) in [c.id for c in characters]:
         await service.management.delete_character(id_)
         await send_character_list(service)
     else:
