@@ -1,5 +1,19 @@
 version: '3.5'
 
+x-service-template: &service_template
+    build:
+      context: ./dora_bora
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./dora_bora:/workspace
+    env_file: ./dora_bora/.env
+    depends_on:
+      - db
+      - redis
+      - static
+    restart: on-failure
+    user: "1000:1000"
+
 services:
   db:
     image: postgres
@@ -13,6 +27,7 @@ services:
       - "0.0.0.0:5432:5432"
     command: ["postgres", "-c", "log_statement=all"]
     restart: on-failure
+    user: "1000:1000"
 
   redis:
     image: redis:6.2-alpine
@@ -23,51 +38,6 @@ services:
     volumes:
       - redis:/data
 
-  management:
-    build:
-      context: ./management
-      dockerfile: ./Dockerfile
-    volumes:
-      - ./management:/workspace
-    ports:
-      - "5050:5050"
-    env_file: ./management/.env
-    depends_on:
-      - db
-      - redis
-    restart: on-failure
-    user: "1000:1000"
-
-  login:
-    build:
-      context: ./login
-      dockerfile: ./Dockerfile
-    volumes:
-      - ./login:/workspace
-    ports:
-      - "5051:5051"
-    env_file: ./login/.env
-    depends_on:
-      - management
-      - static
-    restart: on-failure
-    user: "1000:1000"
-
-  game:
-    build:
-      context: ./game
-      dockerfile: ./Dockerfile
-    volumes:
-      - ./game:/workspace
-    ports:
-      - "5052:5052"
-    env_file: ./game/.env
-    depends_on:
-      - management
-      - static
-    restart: on-failure
-    user: "1000:1000"
-
   static:
     image: nginx
     ports:
@@ -76,20 +46,24 @@ services:
         - ./static:/usr/share/nginx/html
     restart: on-failure
 
-  integration:
-    build:
-      context: ./integration
-      dockerfile: ./Dockerfile
-    volumes:
-      - ./integration:/workspace
-    env_file: ./integration/.env
-    depends_on:
-      - management
-      - static
-      - game
-      - login
-    restart: on-failure
-    user: "1000:1000"
+  management:
+    <<: *service_template
+    ports:
+      - "5050:5050"
+    command: ["management_server"]
+
+  login:
+    <<: *service_template
+    ports:
+      - "5052:5052"
+    command: ["login_server"]
+
+  game:
+    <<: *service_template
+    ports:
+      - "5052:5052"
+    command: ["game_server"]
+
 
 volumes:
   redis:
