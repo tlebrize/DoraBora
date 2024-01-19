@@ -1,8 +1,8 @@
 import string, random
-from django.contrib.auth.hashers import achek_password
+from django.contrib.auth.hashers import acheck_password
 from django.conf import settings
 
-from .ank_crypto import ank_decrypt
+from Login.ank_crypto import ank_decrypt
 from Login.models import Server, Account
 
 
@@ -36,7 +36,7 @@ async def check_version(s):
 
 
 async def switch_login(s):
-    switch_token = s.read()[:196]
+    switch_token = (await s.readline())[:196]
 
     try:
         s.account = await Account.objects.aget(switch_token=switch_token)
@@ -44,7 +44,7 @@ async def switch_login(s):
         raise Exception("Invalid switch_token")
 
     s.account.switch_token = None
-    await s.account.save()
+    await s.account.asave()
 
 
 async def password_login(s):
@@ -58,7 +58,7 @@ async def password_login(s):
     password = ank_decrypt(ank_password, s.key)
 
     account = await Account.objects.aget(username=s.username)
-    if await achek_password(password, account.encoded_password):
+    if await acheck_password(password, account.password):
         s.account = account
     else:
         raise Exception("Invalid password.")
@@ -67,7 +67,7 @@ async def password_login(s):
 async def send_connected_infos(s):
     assert s.account
 
-    server_login_list = await Server.objects.format_login_list()
+    server_login_list = await Server.objects.aformat_login_list()
 
     login_packets = [
         f"Ad{s.account.nickname}",

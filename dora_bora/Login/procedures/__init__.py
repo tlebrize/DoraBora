@@ -8,6 +8,12 @@ from .connection import (
     send_connected_infos,
 )
 
+from .A_account import (
+    send_server_list,
+    handle_server_connection,
+    handle_switch_token,
+)
+
 __all__ = (
     "make_key",
     "send_policy",
@@ -16,4 +22,7 @@ __all__ = (
     "switch_login",
     "password_login",
     "send_connected_infos",
+    "send_server_list",
+    "handle_server_connection",
+    "handle_switch_token",
 )

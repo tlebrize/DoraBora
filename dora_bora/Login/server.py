@@ -1,6 +1,6 @@
 from DoraBora.server import BaseServer
 
-from Login import procedures as procs
+from Login import procedures
 from Login.models import Account
 
 
@@ -16,19 +16,33 @@ class LoginServer(BaseServer):
         await self.connection_steps()
 
         while not self.quit:
-            await self.handle_server_input()
+            await self.account_handler()
 
     async def connection_steps(self):
-        await procs.send_policy(self)
-        await procs.send_key(s)
-        await procs.check_version(version)
+        await procedures.send_policy(self)
+        await procedures.send_key(self)
+        await procedures.check_version(self)
 
         # choose connection type
         packet = await self.readline()
         if packet == "#S":
-            await procs.switch_login(self)
+            await procedures.switch_login(self)
         else:
             self.username = packet
-            await procs.password_login(self)
+            await procedures.password_login(self)
 
-        await procs.send_connected_infos(self)
+        await procedures.send_connected_infos(self)
+
+    async def account_handler(self):
+        msg = await self.readline()
+        if not msg:
+            self.quit = True
+        elif msg == "Af":
+            await self.write("Af0|0|0|1|-1")
+            # login queue is disabled.
+        elif msg == "Ax":
+            await procedures.send_server_list(self)
+        elif msg[:2] == "AX":
+            await procedures.handle_server_connection(self, int(msg[2:]))
+        elif msg[:2] == "Ai":
+            await procedures.handle_switch_token(self, msg[2:])  # maybe ?

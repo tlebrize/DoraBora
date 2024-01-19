@@ -8,6 +8,7 @@ class Dev(Configuration):
     LOGIN_PORT = values.IntegerValue(5051, environ_name="LOGIN_PORT")
     GAME_HOST = values.Value("0.0.0.0", environ_name="GAME_HOST")
     GAME_PORT = values.IntegerValue(5052, environ_name="GAME_PORT")
+    GAME_SERVER_NAME = values.Value("DoraBora", environ_name="GAME_SERVER_NAME")
 
     CLIENT_VERSION = "1.39.8e"
 

@@ -54,7 +54,7 @@ services:
   login:
     <<: *service_template
     ports:
-      - "5052:5052"
+      - "5051:5051"
     command: ["login_server"]
 
   game:

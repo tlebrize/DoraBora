@@ -1,6 +1,8 @@
-from django.core.management.base import BaseCommand
 import asyncio
-from Login.server import LoginServer
+
+from django.core.management.base import BaseCommand
+
+from Game.server import GameServer
 from django.conf import settings
 
 
@@ -9,15 +11,15 @@ class Command(BaseCommand):
         asyncio.run(self.start_server())
 
     async def server_entrypoint(self, reader, writer):
-        server = LoginServer(reader, writer)
-        await server.run()
+        server = GameServer(reader, writer)
+        await server.run(settings.GAME_SERVER_NAME)
 
     async def start_server(self):
-        print("Starting login server.")
+        print("Starting game server.")
         server = await asyncio.start_server(
             self.server_entrypoint,
-            settings.LOGIN_HOST,
-            settings.LOGIN_PORT,
+            settings.GAME_HOST,
+            settings.GAME_PORT,
         )
         async with server:
             await server.serve_forever()
