@@ -27,7 +27,6 @@ services:
       - "0.0.0.0:5432:5432"
     command: ["postgres", "-c", "log_statement=all"]
     restart: on-failure
-    user: "1000:1000"
 
   redis:
     image: redis:6.2-alpine

@@ -4,6 +4,12 @@ from configurations import Configuration, values
 
 class Dev(Configuration):
     DATABASES = values.DatabaseURLValue(environ_name="DATABASE_URL")
+    LOGIN_HOST = values.Value("0.0.0.0", environ_name="LOGIN_HOST")
+    LOGIN_PORT = values.IntegerValue(5051, environ_name="LOGIN_PORT")
+    GAME_HOST = values.Value("0.0.0.0", environ_name="GAME_HOST")
+    GAME_PORT = values.IntegerValue(5052, environ_name="GAME_PORT")
+
+    CLIENT_VERSION = "1.39.8e"
 
     # Build paths inside the project like this: BASE_DIR / 'subdir'.
     BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,7 +20,7 @@ class Dev(Configuration):
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = True
 
-    ALLOWED_HOSTS = ["dora_bora", "localhost"]
+    ALLOWED_HOSTS = ["dora_bora", "localhost", "0.0.0.0"]
 
     # Application definition
 
@@ -26,6 +32,8 @@ class Dev(Configuration):
         "django.contrib.messages",
         "django.contrib.staticfiles",
         "Management",
+        "Login",
+        "Game",
     ]
 
     MIDDLEWARE = [
