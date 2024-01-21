@@ -1,6 +1,6 @@
 import asyncio
 
-from Game.models import Character
+from Game.models import Character, Map
 from Login.models import Account
 
 
@@ -86,9 +86,8 @@ async def join_game(s, character_id):
     assert s.account
 
     s.character = await Character.objects.aget(account_id=s.account.id, id=character_id)
-
-    # current_map = await s.management.init_current_map(c.map)
-    # await add_character_to_map(s, current_map.id, c.id)
+    s.exchange.character_connected(s.character, s)
+    s.map = await Map.objects.aget(id=s.character._map_id)
 
     # check seller ?
     # check mount
@@ -108,7 +107,7 @@ async def join_game(s, character_id):
     await s.write("eL0|0")  # Emotes
     await s.write("AR6bk")  # Restrictions
     await s.write(s.character.format_pods())  # used_pods|max_pods
-    # await s.write(current_map.format_map_data())
+    await s.write(s.map.format_data())
     # self.shared.characters.move_to_map(c.id, self.root.map.id)
     # self.shared.characters.move_to_cell(c.id, 210)
     await s.write("fC0")  # fight counts

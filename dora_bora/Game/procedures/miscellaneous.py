@@ -4,7 +4,13 @@ from Login.models import Account
 async def disconnect(s):
     assert s.account
 
-    # await remove_character_from_map(s)
+    if s.map:
+        s.exchange.character_left_map(s.character, s.map)
+        await s.exchange.broadcast_map_update(s.map)
+
+    if s.character:
+        s.exchange.character_disconnected(s.character)
+
     s.account.state = Account.States.OFFLINE
 
 

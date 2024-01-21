@@ -7,9 +7,16 @@ from Login.models import Server
 class GameServer(BaseServer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.client_id = None
+        self.exchange = None
         self.server = None
+        self.account = None
+        self.character = None
+        self.map = None
 
-    async def run(self, server_name):
+    async def run(self, server_name, exchange):
+        self.exchange = exchange
+        self.client_id = await self.exchange.get_next_client_id()
         self.server = await Server.objects.aget(name=server_name)
 
         await self.write("HG")
