@@ -84,5 +84,5 @@ class Map(models.Model):
             places=list(filter(None, row["places"].split("|"))),
             raw_map_data=row["mapData"],
             key=row["key"],
-            map_data=None,
+            map_data=row["mapData"],
         )

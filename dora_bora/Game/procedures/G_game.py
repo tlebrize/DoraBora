@@ -82,6 +82,10 @@ async def send_extra_informations(s):
 
     await s.exchange.broadcast_map_update(s.map)
 
+    # map gms ?
+    # cases.stream().filter(cell -> cell != null).forEach(cell -> cell.getPlayers().stream().filter(player ->
+    #     player != null).forEach(player -> packet.append("GM|+").append(player.parseToGM()).append('\u0000')));
+
     # mobs
     # npcs
     # perco

@@ -4,7 +4,6 @@ BASE64 = string.ascii_letters + string.digits + "-_"
 
 
 def ank_decode_cell(encoded):
-    # maybe just a base64 decoding ?
     code = [0, 0]
     for index, value in enumerate(BASE64):  # index of
         if value == encoded[0]:
@@ -17,3 +16,10 @@ def ank_decode_cell(encoded):
 
 def ank_encode_cell(decoded):
     return BASE64[decoded // 64] + BASE64[decoded % 64]
+
+
+def ank_decode_int(c):
+    for i in range(len(BASE64)):
+        if BASE64[i] == c:
+            return i
+    return -1
