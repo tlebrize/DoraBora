@@ -95,11 +95,12 @@ class Character(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-    async def teleport(self, cell_id, map_id):
-        self.map = await Map.objects.aget(id=map_id)
+    async def teleport(self, map_id, cell_id):
+        print(self._map_id, "->", map_id)
+        self._map = await Map.objects.aget(id=map_id)
         self.map_cell_id = cell_id
         await self.asave()
-        return self.map, cell_id
+        return self._map, cell_id
 
     def get_colors(self):
         return [(hex(c)[2:] if c != -1 else -1) for c in self.colors]

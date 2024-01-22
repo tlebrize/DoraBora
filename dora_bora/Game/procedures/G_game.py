@@ -146,8 +146,9 @@ async def handle_acknowledge(s, data):
             s.map = new_map
             s.exchange.character_joined_map(s.character, s.map)
             await s.write(s.map.format_GDM())
+        else:
+            await s.character.asave()
 
-        await s.character.asave()
         await s.write("BN")
     else:
         raise Exception("Unknown action : " + action_data)
