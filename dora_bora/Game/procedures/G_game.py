@@ -85,15 +85,7 @@ async def send_extra_informations(s):
     # mobs
     # npcs
     # perco
-    # map objects? GAME_SEND_MAP_OBJECTS_GDS_PACKETS
-    # public String getObjectsGDsPackets() {
-    #     StringBuilder packet = new StringBuilder("GDF");
-    #     this.cases.stream().filter(gameCase -> gameCase.getObject() != null)
-    #             .forEach(gameCase -> packet.append("|").append(gameCase.getId()).append(";").append(gameCase.getObject().getState())
-    #                     .append(";").append((gameCase.getObject().isInteractive() ? "1" : "0")));
-
-    packets = "".join([f'|{cell["cell_id"]};1;1' for cell in (s.map.map_data or []) if cell.get("obj")])
-    await s.write(f"GDF{packets}")
+    await s.write(f"GDF{s.map.format_GDF()}")
 
     await s.write("GDK")  # gdk ?
 
@@ -102,10 +94,12 @@ async def send_extra_informations(s):
     # merchants
     # fights
     # mount parks
-    # objects again ? GAME_SEND_GDO_OBJECT_TO_MAP
+    # mount park objects
     # mount
     # floor items
+
     # interactive doors
+
     # prisms
     # players + jobs ?
 
@@ -136,12 +130,24 @@ async def handle_acknowledge(s, data):
     print(f"* GA : {action_data}")
 
     if action_data["kind"] == GameActions.MOVE:
+        assert s.character
+        assert s.map
+
         if success:
             s.character.map_cell_id = action_data["destination"]
         else:
             s.character.map_cell_id = int(payload[0])
-        await s.character.asave()
 
+        if door := s.map.doors.get(str(action_data["destination"])):
+            new_map, new_cell = await s.character.teleport(door[0], door[1])
+            await s.write(f"GA;2;{s.character.id};")
+            await s.exchange.broadcast_character_left_map(s.character.id, s.map.id)
+            s.exchange.character_left_map(s.character, s.map)
+            s.map = new_map
+            s.exchange.character_joined_map(s.character, s.map)
+            await s.write(s.map.format_GDM())
+
+        await s.character.asave()
         await s.write("BN")
     else:
         raise Exception("Unknown action : " + action_data)

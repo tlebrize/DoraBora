@@ -9,16 +9,16 @@ class CharacterQueryset(models.QuerySet):
 
     async def acreate(self, *args, **kwargs):
         if not ("_map" in kwargs or "_map_id" in kwargs):
-            dofus_map_id, cell_id = Character.get_defaul_dofus_map_id(_class=kwargs.get("_class"))
+            map_id, cell_id = Character.get_default_map_id(_class=kwargs.get("_class"))
             kwargs["map_cell_id"] = cell_id
-            kwargs["_map"] = await Map.objects.aget(dofus_id=dofus_map_id)
+            kwargs["_map"] = await Map.objects.aget(id=map_id)
         return await super().acreate(*args, **kwargs)
 
     def create(self, *args, **kwargs):
         if not ("_map" in kwargs or "_map_id" in kwargs):
-            dofus_map_id, cell_id = Character.get_defaul_dofus_map_id(_class=kwargs.get("_class"))
+            map_id, cell_id = Character.get_default_map_id(_class=kwargs.get("_class"))
             kwargs["map_cell_id"] = cell_id
-            kwargs["_map"] = Map.objects.get(dofus_id=dofus_map_id)
+            kwargs["_map"] = Map.objects.get(id=map_id)
         return super().create(*args, **kwargs)
 
 
@@ -75,7 +75,7 @@ class Character(models.Model):
     objects = CharacterQueryset.as_manager()
 
     @classmethod
-    def get_defaul_dofus_map_id(cls, _class):
+    def get_default_map_id(cls, _class):
         # TODO config default map ?
         return {
             cls.Class.FECA: (10300, 323),
@@ -94,6 +94,12 @@ class Character(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    async def teleport(self, cell_id, map_id):
+        self.map = await Map.objects.aget(id=map_id)
+        self.map_cell_id = cell_id
+        await self.asave()
+        return self.map, cell_id
 
     def get_colors(self):
         return [(hex(c)[2:] if c != -1 else -1) for c in self.colors]

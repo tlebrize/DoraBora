@@ -45,7 +45,6 @@ class Exchange:
         )
 
     async def broadcast_move_action(self, game_action_id, character_id, map_id, path):
-        print(self.characters_on_maps[map_id])
         await asyncio.gather(
             *[
                 self.characters_server[c.id].write(
@@ -53,6 +52,11 @@ class Exchange:
                 )
                 for c in self.characters_on_maps[map_id]
             ]
+        )
+
+    async def broadcast_character_left_map(self, character_id, map_id):
+        await asyncio.gather(
+            *[self.characters_server[c.id].write(f"GM|-{character_id}") for c in self.characters_on_maps[map_id]]
         )
 
     async def ga_get_next_id(self):
