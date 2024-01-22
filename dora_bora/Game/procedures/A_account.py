@@ -107,7 +107,7 @@ async def join_game(s, character_id):
     await s.write("eL0|0")  # Emotes
     await s.write("AR6bk")  # Restrictions
     await s.write(s.character.format_pods())  # used_pods|max_pods
-    await s.write(s.map.format_data())
+    await s.write(s.map.format_GDM())
     # self.shared.characters.move_to_map(c.id, self.root.map.id)
     # self.shared.characters.move_to_cell(c.id, 210)
     await s.write("fC0")  # fight counts

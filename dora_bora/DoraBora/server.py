@@ -3,6 +3,7 @@ from unidecode import unidecode
 
 class BaseServer:
     def __init__(self, reader, writer):
+        self.client_id = None
         self.reader = reader
         self.writer = writer
 
