@@ -97,9 +97,7 @@ async def send_extra_informations(s):
     # mount park objects
     # mount
     # floor items
-
     # interactive doors
-
     # prisms
     # players + jobs ?
 
