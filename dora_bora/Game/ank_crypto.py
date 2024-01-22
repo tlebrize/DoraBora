@@ -39,4 +39,4 @@ def ank_decrypt_raw_map_data(raw_map_data, key):
 
     print("".join(escaped))
     # return unescape(dataToDecrypt.toString());
-	assert False, 'this was never checked.'
+    assert False, "this was never checked."

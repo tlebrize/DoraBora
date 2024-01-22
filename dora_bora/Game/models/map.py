@@ -1,5 +1,8 @@
 from django.db import models
 
+from Game.ank_crypto import ank_is_map_crypted, ank_decrypt_raw_map_data
+from Game.ank_encodings import ank_decode_map_data
+
 
 class Map(models.Model):
     capabilities = models.IntegerField(null=False, blank=False)
@@ -67,6 +70,13 @@ class Map(models.Model):
         x, y, z = row["mappos"].split(",")
         position_parsed = {"x": int(x), "y": int(y), "z": int(z)}
 
+        if ank_is_map_crypted(row["mapData"]):
+            # encoded_map_data = ank_decrypt_raw_map_data(row["mapData"], row["key"])
+            # map_data = ank_decode_map_data(encoded_map_data)
+            map_data = None
+        else:
+            map_data = ank_decode_map_data(row["mapData"])
+
         return cls(
             dofus_id=int(row["id"]),
             position=position_parsed,
@@ -84,5 +94,5 @@ class Map(models.Model):
             places=list(filter(None, row["places"].split("|"))),
             raw_map_data=row["mapData"],
             key=row["key"],
-            map_data=row["mapData"],
+            map_data=map_data,
         )

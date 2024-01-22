@@ -82,14 +82,19 @@ async def send_extra_informations(s):
 
     await s.exchange.broadcast_map_update(s.map)
 
-    # map gms ?
-    # cases.stream().filter(cell -> cell != null).forEach(cell -> cell.getPlayers().stream().filter(player ->
-    #     player != null).forEach(player -> packet.append("GM|+").append(player.parseToGM()).append('\u0000')));
-
     # mobs
     # npcs
     # perco
     # map objects? GAME_SEND_MAP_OBJECTS_GDS_PACKETS
+    # public String getObjectsGDsPackets() {
+    #     StringBuilder packet = new StringBuilder("GDF");
+    #     this.cases.stream().filter(gameCase -> gameCase.getObject() != null)
+    #             .forEach(gameCase -> packet.append("|").append(gameCase.getId()).append(";").append(gameCase.getObject().getState())
+    #                     .append(";").append((gameCase.getObject().isInteractive() ? "1" : "0")));
+
+    packets = "".join([f'|{cell["cell_id"]};1;1' for cell in (s.map.map_data or []) if cell.get("obj")])
+    await s.write(f"GDF{packets}")
+
     await s.write("GDK")  # gdk ?
 
     await s.write("fC0")  # fight counts

@@ -132,8 +132,8 @@ class Character(models.Model):
                     0,  # ? level ?
                     self.id,
                     self.name,
-                    self._class,
-                    f"{self.get_gfxid()}^100x100",  # gfxid^size
+                    self._class,  # class,title;
+                    f"{self.get_gfxid()}^100",  # gfxid^size
                     self.gender,
                     f"",  # -1,0,0,0
                     # alignement,?,wings,grade
