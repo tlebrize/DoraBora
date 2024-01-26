@@ -1,7 +1,7 @@
 from Game.game_actions import GameActions
 
 
-async def handle_move_acknowledge(s, action_data, payload):
+async def handle_move_acknowledge(s, success, action_data, payload):
     assert s.character
     assert s.map
 
@@ -32,6 +32,6 @@ async def handle_game_action_acknowledges(s, data):
     print(f"* GK : {action_data}")
 
     if action_data["kind"] == GameActions.MOVE:
-        await handle_move_acknowledge(s, action_data, payload)
+        await handle_move_acknowledge(s, success, action_data, payload)
     else:
         raise Exception("Unknown action : " + action_data)

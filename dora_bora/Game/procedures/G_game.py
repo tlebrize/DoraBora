@@ -1,3 +1,5 @@
+from asgiref.sync import sync_to_async
+
 from .GA_game_actions import handle_game_action
 from .GK_game_action_acknoledges import handle_game_action_acknowledges
 
@@ -82,7 +84,10 @@ async def send_extra_informations(s):
 
     await s.exchange.broadcast_map_update(s.map)
 
-    # mobs
+    monster_gms = await sync_to_async(s.map.format_monster_groups_GM)()
+    if monster_gms:
+        await s.write(f"GM|{monster_gms}")
+
     # npcs
     # perco
     await s.write(f"GDF{s.map.format_GDF()}")

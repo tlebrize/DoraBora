@@ -1,7 +1,12 @@
+import random
 from django.db import models
 
 from Game.ank_crypto import ank_is_map_crypted, ank_decrypt_raw_map_data
 from Game.ank_encodings import ank_decode_map_data
+from DoraBora.utils import get_model
+
+MonsterGroupTemplate = get_model("Game.MonsterGroupTemplate")
+MonsterGroup = get_model("Game.MonsterGroup")
 
 
 class MapQuerySet(models.QuerySet):
@@ -25,6 +30,7 @@ class Map(models.Model):
     sniffed = models.IntegerField(null=False, blank=False)
     width = models.IntegerField(null=False, blank=False)
     doors = models.JSONField(default=dict, null=False, blank=True)
+    max_group_count = models.IntegerField(null=False)
 
     objects = MapQuerySet.as_manager()
 
@@ -36,7 +42,7 @@ class Map(models.Model):
 
     def format_GDF(self):
         if self.map_data:  #           interactive;state
-            return "GDF" + "".join([f'|{cell["cell_id"]};1;1' for cell in self.map_data if cell.get("obj")])
+            return "".join([f'|{cell["cell_id"]};1;1' for cell in self.map_data if cell.get("obj")])
         else:
             return ""
 
@@ -46,36 +52,9 @@ class Map(models.Model):
 
     @classmethod
     def from_seed(cls, row):
-        """
-        'capabilities': '15',
-        'date': '0903300949',
-        'fixSize': '-1',
-        'forbidden': '0;0;0;0;0;0;0',
-        'height': '17',
-        'id': '1558',
-        'key': '625969222E43292A7D6B633C60492D23562149777B51492D7B4271223E35756263337950393C5428694546285D5F7C3A72636B2F43375F4658397A617772263623596E4F6D7E3E2C772A7046312E5339416977743C542532355C4B3E713F2F7C5F2627454C4621375F3D25326249792F32597F3061517D695954596425326220713E6B3F7E2D5D2927514F552E7952402532355057212D46772F5B404F6B3A715642447D69384C455B472C3847296A4877315E344A6D2D51746A5C4A5D792E4F7F454446676261',
-        'mapData': '...',
-        'mappos': '0,3,20',
-        'maxSize': '6',
-        'minSize': '1',
-        'monsters': '',
-        'numgroup': '3',
-        'places': 'e6fifjfwfxfKfLfZ|drdFdGdTdUd7d8ek',
-        'sniffed': '0',
-        'width': '15'
-        """
-
         forbidden_parsed = dict(
             zip(
-                [
-                    "shop",
-                    "perceptor",
-                    "prism",
-                    "teleport",
-                    "duel",
-                    "aggression",
-                    "canal",
-                ],
+                ["shop", "perceptor", "prism", "teleport", "duel", "aggression", "canal"],
                 map(bool, map(int, row["forbidden"].split(";") + [0, 0, 0, 0, 0, 0, 0])),
             )
         )
@@ -98,7 +77,7 @@ class Map(models.Model):
 
         id_ = int(row["id"])
 
-        return {id_: group_data}, cls(
+        return cls(
             id=id_,
             position=position_parsed,
             forbidden=forbidden_parsed,
@@ -111,4 +90,26 @@ class Map(models.Model):
             raw_map_data=row["mapData"],
             key=row["key"],
             map_data=map_data,
+            max_group_count=int(row["numgroup"]),
         )
+
+    def format_monster_groups_GM(self):
+        if hasattr(self, "monster_group_template"):
+            self.spawn_monster_groups()
+            return self.monster_groups.format_GM()
+
+    def get_random_walkable_cell_id(self):
+        walkable = []
+        for cell in self.map_data:
+            if cell["walkable"]:
+                walkable.append(cell["cell_id"])
+        if walkable:
+            return random.choice(walkable)
+        else:
+            return None
+
+    def spawn_monster_groups(self):
+        difference = self.max_group_count - self.monster_groups.count()
+        if difference > 0:
+            for _ in range(difference):
+                MonsterGroup.objects.create_from_template(self.monster_group_template)
