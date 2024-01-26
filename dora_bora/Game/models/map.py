@@ -15,16 +15,11 @@ class MapQuerySet(models.QuerySet):
 class Map(models.Model):
     capabilities = models.IntegerField(null=False, blank=False)
     date = models.CharField(max_length=255, null=False, blank=False)
-    fix_size = models.IntegerField(null=False, blank=False)
     forbidden = models.JSONField(default=list, null=False, blank=False)
-    group_count = models.IntegerField(null=False, blank=False)
     height = models.IntegerField(null=False, blank=False)
     key = models.TextField(null=True, blank=True)
     raw_map_data = models.TextField(null=False, blank=False)
     map_data = models.JSONField(null=True, blank=True)
-    max_size = models.IntegerField(null=False, blank=False)
-    min_size = models.IntegerField(null=False, blank=False)
-    monsters = models.JSONField(default=list, null=False, blank=True)
     places = models.JSONField(default=list, null=False, blank=True)
     position = models.JSONField(default=list, null=False, blank=False)
     sniffed = models.IntegerField(null=False, blank=False)
@@ -85,8 +80,6 @@ class Map(models.Model):
             )
         )
 
-        monsters_parsed = [list(map(int, m.split(","))) for m in filter(None, row["monsters"].split("|"))]
-
         x, y, z = row["mappos"].split(",")
         position_parsed = {"x": int(x), "y": int(y), "z": int(z)}
 
@@ -97,19 +90,22 @@ class Map(models.Model):
         else:
             map_data = ank_decode_map_data(row["mapData"])
 
-        return cls(
-            id=int(row["id"]),
+        group_data = {
+            "max_size": int(row["maxSize"]),
+            "min_size": int(row["minSize"]),
+            "monsters": [list(map(int, m.split(","))) for m in filter(None, row["monsters"].split("|"))],
+        }
+
+        id_ = int(row["id"])
+
+        return {id_: group_data}, cls(
+            id=id_,
             position=position_parsed,
-            max_size=int(row["maxSize"]),
-            min_size=int(row["minSize"]),
-            fix_size=int(row["fixSize"]),
             forbidden=forbidden_parsed,
-            group_count=int(row["numgroup"]),
             height=int(row["height"]),
             width=int(row["width"]),
             sniffed=int(row["sniffed"]),
             date=row["date"],
-            monsters=monsters_parsed,
             capabilities=int(row["capabilities"]),
             places=list(filter(None, row["places"].split("|"))),
             raw_map_data=row["mapData"],

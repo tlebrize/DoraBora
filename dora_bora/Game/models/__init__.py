@@ -1,8 +1,11 @@
 from .character import Character
 from .map import Map
-from .monster import Monster
+from .monsters import Monster, MonsterGroup, RankedMonster
 
 __all__ = (
     "Character",
     "Map",
+    "Monster",
+    "MonsterGroup",
+    "RankedMonster",
 )

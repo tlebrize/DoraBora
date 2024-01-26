@@ -6,7 +6,7 @@ async def handle_move_action(s, data):
     destination = ank_decode_cell(data[-2:])
     game_action_id = await s.exchange.ga_move(s.character, destination)
 
-    current_cell_code = ank_encode_cell(s.character.map_cell_id)
+    current_cell_code = ank_encode_cell(s.character.cell_id)
 
     path = current_cell_code + data  # check pathfinding?
     await s.exchange.broadcast_move_action(game_action_id, s.character.id, s.map.id, path)

@@ -6,9 +6,9 @@ async def handle_move_acknowledge(s, action_data, payload):
     assert s.map
 
     if success:
-        s.character.map_cell_id = action_data["destination"]
+        s.character.cell_id = action_data["destination"]
     else:
-        s.character.map_cell_id = int(payload[0])
+        s.character.cell_id = int(payload[0])
 
     if door := s.map.doors.get(str(action_data["destination"])):
         new_map, new_cell = await s.character.teleport(door[0], door[1])

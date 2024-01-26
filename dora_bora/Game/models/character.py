@@ -10,14 +10,14 @@ class CharacterQueryset(models.QuerySet):
     async def acreate(self, *args, **kwargs):
         if not ("_map" in kwargs or "_map_id" in kwargs):
             map_id, cell_id = Character.get_default_map_id(_class=kwargs.get("_class"))
-            kwargs["map_cell_id"] = cell_id
+            kwargs["cell_id"] = cell_id
             kwargs["_map"] = await Map.objects.aget(id=map_id)
         return await super().acreate(*args, **kwargs)
 
     def create(self, *args, **kwargs):
         if not ("_map" in kwargs or "_map_id" in kwargs):
             map_id, cell_id = Character.get_default_map_id(_class=kwargs.get("_class"))
-            kwargs["map_cell_id"] = cell_id
+            kwargs["cell_id"] = cell_id
             kwargs["_map"] = Map.objects.get(id=map_id)
         return super().create(*args, **kwargs)
 
@@ -59,7 +59,7 @@ class Character(models.Model):
         on_delete=models.SET_NULL,
         null=True,  # nullable in case maps get re-imported. Should never really be null otherwise.
     )
-    map_cell_id = models.IntegerField(null=False, blank=False)
+    cell_id = models.IntegerField(null=False, blank=False)
 
     _class = models.IntegerField(choices=Class, null=False)
     colors = models.JSONField(default=list, null=False)
@@ -98,7 +98,7 @@ class Character(models.Model):
     async def teleport(self, map_id, cell_id):
         print(self._map_id, "->", map_id)
         self._map = await Map.objects.aget(id=map_id)
-        self.map_cell_id = cell_id
+        self.cell_id = cell_id
         await self.asave()
         return self._map, cell_id
 
@@ -134,7 +134,7 @@ class Character(models.Model):
             map(
                 str,
                 [
-                    f"GM|+{self.map_cell_id}",
+                    f"GM|+{self.cell_id}",
                     1,  # orientation
                     0,  # ? level ?
                     self.id,
