@@ -58,6 +58,9 @@ class Monster(models.Model):
 
     objects = MonsterQuerySet.as_manager()
 
+    def __str__(self):
+        return f"{self.id}:{self.name} lvl.{self.level}"
+
     @classmethod
     def from_template(cls, group_id, map_id, rank_template):
         monster_template = rank_template.monster_template

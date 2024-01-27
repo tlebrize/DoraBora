@@ -1,4 +1,5 @@
 import random
+
 from django.db import models
 
 
@@ -18,6 +19,9 @@ class MonsterGroupTemplate(models.Model):
 
     cell_id = models.IntegerField(null=True, blank=False, default=None)
     respawn_delay = models.IntegerField(null=True, blank=False, default=None)
+
+    def __str__(self):
+        return f"{self.id} Map:{self._map_id}"
 
     def get_random_group(self):
         size = random.randint(self.min_size, self.max_size)

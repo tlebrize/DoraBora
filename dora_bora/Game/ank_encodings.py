@@ -37,7 +37,7 @@ def ank_decode_map_data(map_data):
         for char in cell_data:
             array.append(ank_decode_int(char))
 
-        walkable = ((array[2] & 56) >> 3) != 0 and not (cell_data.lower() in ["bhgaeaaaaa", "hhaaeaaaaa"])
+        walkable = ((array[2] & 56) >> 3) != 0 and cell_data.lower() not in ["bhgaeaaaaa", "hhaaeaaaaa"]
 
         if (array[0] & 1) == 0:
             los = False

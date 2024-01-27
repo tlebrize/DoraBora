@@ -1,6 +1,7 @@
+import csv
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
-import csv
 
 from Game.models import MonsterTemplate, RankedMonsterTemplate
 

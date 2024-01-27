@@ -1,7 +1,6 @@
 import asyncio
 from collections import defaultdict
 
-from Game.server import GameServer
 from Game.game_actions import GameActions
 
 

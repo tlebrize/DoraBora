@@ -1,10 +1,10 @@
 import asyncio
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from Game.server import GameServer
 from Game.exchange import Exchange
-from django.conf import settings
+from Game.server import GameServer
 
 
 class Command(BaseCommand):

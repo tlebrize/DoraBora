@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q, Count
+from django.db.models import Count, Q
 
 
 class ServerQuerySet(models.QuerySet):

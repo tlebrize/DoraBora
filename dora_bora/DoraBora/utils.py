@@ -1,5 +1,3 @@
-from functools import wraps
-
 from django.apps import apps
 
 

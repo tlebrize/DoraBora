@@ -1,9 +1,11 @@
-import string, random
-from django.contrib.auth.hashers import acheck_password
+import random
+import string
+
 from django.conf import settings
+from django.contrib.auth.hashers import acheck_password
 
 from Login.ank_crypto import ank_decrypt
-from Login.models import Server, Account
+from Login.models import Account, Server
 
 
 def make_key():

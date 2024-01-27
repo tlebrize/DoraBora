@@ -46,6 +46,9 @@ class MonsterGroup(models.Model):
 
     objects = MonsterGroupQuerySet.as_manager()
 
+    def __str__(self):
+        return f"{self.id} Map:{self._map_id}"
+
     @property
     def orientation(self):
         return 1

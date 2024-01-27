@@ -34,3 +34,6 @@ class RankedMonsterTemplate(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint("rank", "monster_template_id", name="unique_rank_for_monster_template")]
+
+    def __str__(self):
+        return f"{self.id}: {self.monster_template_id} lvl.{self.level}"

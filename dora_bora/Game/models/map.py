@@ -1,9 +1,10 @@
 import random
+
 from django.db import models
 
-from Game.ank_crypto import ank_is_map_crypted, ank_decrypt_raw_map_data
-from Game.ank_encodings import ank_decode_map_data
 from DoraBora.utils import get_model
+from Game.ank_crypto import ank_is_map_crypted
+from Game.ank_encodings import ank_decode_map_data
 
 MonsterGroupTemplate = get_model("Game.MonsterGroupTemplate")
 MonsterGroup = get_model("Game.MonsterGroup")
@@ -22,7 +23,7 @@ class Map(models.Model):
     date = models.CharField(max_length=255, null=False, blank=False)
     forbidden = models.JSONField(default=list, null=False, blank=False)
     height = models.IntegerField(null=False, blank=False)
-    key = models.TextField(null=True, blank=True)
+    key = models.TextField(null=False, blank=True, default="")
     raw_map_data = models.TextField(null=False, blank=False)
     map_data = models.JSONField(null=True, blank=True)
     places = models.JSONField(default=list, null=False, blank=True)
@@ -69,7 +70,7 @@ class Map(models.Model):
         else:
             map_data = ank_decode_map_data(row["mapData"])
 
-        group_data = {
+        {
             "max_size": int(row["maxSize"]),
             "min_size": int(row["minSize"]),
             "monsters": [list(map(int, m.split(","))) for m in filter(None, row["monsters"].split("|"))],

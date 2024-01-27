@@ -51,7 +51,7 @@ async def set_key_index(_, key_index):  # Unused
 
 
 async def send_region_version(s):  # ???
-    await s.write(f"AV0")
+    await s.write("AV0")
 
 
 async def set_language(_, lang_code):  # Unused

@@ -74,6 +74,9 @@ class Character(models.Model):
 
     objects = CharacterQueryset.as_manager()
 
+    def __str__(self):
+        return f"{self.name}"
+
     @classmethod
     def get_default_map_id(cls, _class):
         # TODO config default map ?
@@ -91,9 +94,6 @@ class Character(models.Model):
             cls.Class.SACRIEUR: (10296, 243),
             cls.Class.PANDAWA: (10289, 236),
         }.get(_class, (10298, 314))
-
-    def __str__(self):
-        return f"{self.name}"
 
     async def teleport(self, map_id, cell_id):
         print(self._map_id, "->", map_id)
@@ -142,7 +142,7 @@ class Character(models.Model):
                     self._class,  # class,title;
                     f"{self.get_gfxid()}^100",  # gfxid^size
                     self.gender,
-                    f"",  # -1,0,0,0
+                    "",  # -1,0,0,0
                     # alignement,?,wings,grade
                     *self.get_colors(),
                     ",,,,",  # equipment
