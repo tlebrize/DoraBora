@@ -20,7 +20,7 @@ class MonsterGroupQuerySet(models.QuerySet):
                     map_id=group_template._map_id,
                     rank_template=rank_template,
                 )
-                for rank_template in group_template.monster_templates.all()
+                for rank_template in group_template.get_random_group()
             ]
         )
 
@@ -48,7 +48,7 @@ class MonsterGroup(models.Model):
 
     @property
     def orientation(self):
-        return 0
+        return 1
 
     @property
     def star_bonus(self):
@@ -68,10 +68,10 @@ class MonsterGroup(models.Model):
                     self.star_bonus,
                     self.id,
                     ",".join(map(str, monsters_ids)),
-                    -3,
+                    -3,  # No idea what this does
                     ",".join(map(lambda g: f"{g}^100", monsters_gfxs)),
                     ",".join(map(str, monsters_levels)),
-                    ",".join(map(lambda c: f"{c};0,0,0,0;", monsters_colors)),
+                    "".join(map(lambda c: f"{c};0,0,0,0;", monsters_colors)),
                 ],
             )
         )
