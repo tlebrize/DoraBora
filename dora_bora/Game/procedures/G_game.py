@@ -1,5 +1,7 @@
-from Game.ank_encodings import ank_decode_cell, ank_encode_cell
-from Game.game_actions import GameActions
+from asgiref.sync import sync_to_async
+
+from .GA_game_actions import handle_game_action
+from .GK_game_action_acknoledges import handle_game_action_acknowledges
 
 
 async def send_game_create(s, _unused):
@@ -82,7 +84,10 @@ async def send_extra_informations(s):
 
     await s.exchange.broadcast_map_update(s.map)
 
-    # mobs
+    monster_gms = await sync_to_async(s.map.format_monster_groups_GM)()
+    if monster_gms:
+        await s.write(f"GM|{monster_gms}")
+
     # npcs
     # perco
     await s.write(f"GDF{s.map.format_GDF()}")
@@ -102,56 +107,6 @@ async def send_extra_informations(s):
     # players + jobs ?
 
 
-async def handle_move_action(s, data):
-    destination = ank_decode_cell(data[-2:])
-    game_action_id = await s.exchange.ga_move(s.character, destination)
-
-    current_cell_code = ank_encode_cell(s.character.map_cell_id)
-
-    path = current_cell_code + data  # check pathfinding?
-    await s.exchange.broadcast_move_action(game_action_id, s.character.id, s.map.id, path)
-
-
-async def handle_action(s, data):
-    action_id = int(data[:3])
-    if action_id == 1:
-        await handle_move_action(s, data[3:])
-    else:
-        raise Exception(f"Unknown action : {data}.")
-
-
-async def handle_acknowledge(s, data):
-    success = data[0] == "K"
-    id_, *payload = data[1:].split("|")
-    action_data = s.exchange.pop_action(int(id_))
-
-    print(f"* GA : {action_data}")
-
-    if action_data["kind"] == GameActions.MOVE:
-        assert s.character
-        assert s.map
-
-        if success:
-            s.character.map_cell_id = action_data["destination"]
-        else:
-            s.character.map_cell_id = int(payload[0])
-
-        if door := s.map.doors.get(str(action_data["destination"])):
-            new_map, new_cell = await s.character.teleport(door[0], door[1])
-            await s.write(f"GA;2;{s.character.id};")
-            await s.exchange.broadcast_character_left_map(s.character.id, s.map.id)
-            s.exchange.character_left_map(s.character, s.map)
-            s.map = new_map
-            s.exchange.character_joined_map(s.character, s.map)
-            await s.write(s.map.format_GDM())
-        else:
-            await s.character.asave()
-
-        await s.write("BN")
-    else:
-        raise Exception("Unknown action : " + action_data)
-
-
 async def game_handler(s, command):
     match command[0]:
         case "C":
@@ -159,6 +114,6 @@ async def game_handler(s, command):
         case "I":
             await send_extra_informations(s)
         case "A":
-            await handle_action(s, command[1:])
+            await handle_game_action(s, command[1:])
         case "K":
-            await handle_acknowledge(s, command[1:])
+            await handle_game_action_acknowledges(s, command[1:])

@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from django.utils import timezone
 
 
@@ -32,7 +31,7 @@ class Account(models.Model):
         choices=Communities,
         null=False,
     )
-    switch_token = models.CharField(max_length=1023, null=True, blank=True, default=True)
+    switch_token = models.CharField(max_length=1023, null=False, blank=True, default="")
     is_game_master = models.BooleanField(default=False, null=False)
 
     def __str__(self):

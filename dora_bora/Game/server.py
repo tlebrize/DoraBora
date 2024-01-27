@@ -1,5 +1,4 @@
 from DoraBora.server import BaseServer
-
 from Game import procedures
 from Login.models import Server
 
