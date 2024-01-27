@@ -1,6 +1,8 @@
+import csv
+from collections import defaultdict
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
-import csv
 
 from Game.models import MonsterGroupTemplate, RankedMonsterTemplate
 
@@ -59,18 +61,18 @@ class Command(BaseCommand):
                 if not monsters_data:
                     continue
 
-                ranks_data = {}
+                ranks_data = defaultdict(list)
                 for data in row["monsters"].split("|"):
                     if data:
                         monster_id, level = data.split(",")
-                        ranks_data[int(monster_id)] = int(level)
+                        ranks_data[int(monster_id)].append(int(level))
 
                 ranked_queryset = RankedMonsterTemplate.objects.filter(
                     monster_template_id__in=ranks_data.keys()
                 ).values_list("id", "level", "monster_template_id")
 
                 for ranked_id, level, monster_id in ranked_queryset:
-                    if ranks_data[monster_id] == level:
+                    if level in ranks_data[monster_id]:
                         relations.append(
                             MonsterGroupTemplate.monster_templates.through(
                                 rankedmonstertemplate_id=ranked_id,

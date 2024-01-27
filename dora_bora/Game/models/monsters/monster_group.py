@@ -55,7 +55,7 @@ class MonsterGroup(models.Model):
         return 0
 
     def format_GM(self):
-        monsters_ids = self.monsters.values_list("id", flat=True)
+        monsters_ids = self.monsters.values_list("template_id", flat=True)
         monsters_gfxs = self.monsters.values_list("gfx_id", flat=True)
         monsters_levels = self.monsters.values_list("level", flat=True)
         monsters_colors = self.monsters.values_list("colors", flat=True)

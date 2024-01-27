@@ -7,6 +7,12 @@ class MonsterQuerySet(models.QuerySet):
 
 
 class Monster(models.Model):
+    template = models.ForeignKey(
+        "Game.MonsterTemplate",
+        on_delete=models.CASCADE,
+        related_name="monsters",
+        null=False,
+    )
     group = models.ForeignKey(
         "Game.MonsterGroup",
         on_delete=models.CASCADE,
@@ -56,6 +62,7 @@ class Monster(models.Model):
     def from_template(cls, group_id, map_id, rank_template):
         monster_template = rank_template.monster_template
         return cls(
+            template_id=monster_template.id,
             group_id=group_id,
             _map_id=map_id,
             # monster
