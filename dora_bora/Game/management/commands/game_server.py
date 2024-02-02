@@ -9,19 +9,19 @@ from Game.server import GameServer
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        asyncio.run(self.start_server())
+        asyncio.run(self.start_game_server())
 
-    async def server_entrypoint(self, reader, writer):
+    async def game_entrypoint(self, reader, writer):
         server = GameServer(reader, writer)
         await server.run(settings.GAME_SERVER_NAME, self.exchange)
 
-    async def start_server(self):
+    async def start_game_server(self):
         print("Starting game server.")
 
         self.exchange = Exchange()
 
         server = await asyncio.start_server(
-            self.server_entrypoint,
+            self.game_entrypoint,
             settings.GAME_HOST,
             settings.GAME_PORT,
         )

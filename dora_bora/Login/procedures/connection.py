@@ -45,7 +45,7 @@ async def switch_login(s):
     except Account.DoesNotExist:
         raise Exception("Invalid switch_token")
 
-    s.account.switch_token = None
+    s.account.switch_token = ""
     await s.account.asave()
 
 

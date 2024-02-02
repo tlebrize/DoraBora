@@ -1,3 +1,6 @@
+from asgiref.sync import sync_to_async
+
+from Game.fight import create_monster_fight
 from Game.game_actions import GameActions
 
 
@@ -22,6 +25,21 @@ async def handle_move_acknowledge(s, success, action_data, payload):
         await s.character.asave()
 
     await s.write("BN")
+
+    group_id = await sync_to_async(s.map.get_aggressing_group)(s.character)
+    if group_id:
+        s.fight = await create_monster_fight(s, group_id)
+        await s.exchange.fight_started(s.fight)
+        await s.exchange.broadcast_fight_count(s.map.id)
+        await s.write(s.fight.format_gjk())
+
+        gdf_packet = await s.fight.format_gdf()
+        if gdf_packet:
+            await s.write()
+
+        # TODO timer ??
+
+        await s.write(await s.fight.format_gp(team=0))
 
 
 async def handle_game_action_acknowledges(s, data):

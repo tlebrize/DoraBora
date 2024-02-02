@@ -114,3 +114,8 @@ class Map(models.Model):
         if difference > 0:
             for _ in range(difference):
                 MonsterGroup.objects.create_from_template(self.monster_group_template)
+
+    def get_aggressing_group(self, character):
+        for group_id, cell_id in self.monster_groups.values_list("id", "cell_id"):
+            if cell_id == character.cell_id:
+                return group_id

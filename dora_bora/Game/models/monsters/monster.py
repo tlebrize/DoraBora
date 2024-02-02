@@ -36,12 +36,12 @@ class Monster(models.Model):
     aggression_range = models.IntegerField(null=True, default=None)
 
     rank = models.IntegerField(null=False, blank=False)
-    level = models.IntegerField(null=False)
     spells = models.CharField(max_length=255, null=False)
+
+    level = models.IntegerField(null=False)
     hit_points = models.IntegerField(null=False)
     action_points = models.IntegerField(null=False)
     movement_points = models.IntegerField(null=False)
-    initiative = models.IntegerField(null=False)
     experience_reward = models.IntegerField(null=False)
     neutral_resistance = models.IntegerField(null=False)
     earth_resistance = models.IntegerField(null=False)
@@ -60,6 +60,14 @@ class Monster(models.Model):
 
     def __str__(self):
         return f"{self.id}:{self.name} lvl.{self.level}"
+
+    @property
+    def current_hit_points(self):
+        return self.hit_points
+
+    @property
+    def max_hit_points(self):
+        return self.hit_points
 
     @classmethod
     def from_template(cls, group_id, map_id, rank_template):

@@ -10,6 +10,8 @@ class Dev(Configuration):
     GAME_HOST = values.Value("0.0.0.0", environ_name="GAME_HOST")
     GAME_PORT = values.IntegerValue(5052, environ_name="GAME_PORT")
     GAME_SERVER_NAME = values.Value("DoraBora", environ_name="GAME_SERVER_NAME")
+    FIGHT_HOST = values.Value("0.0.0.0", environ_name="FIGHT_HOST")
+    FIGHT_PORT = values.IntegerValue(5152, environ_name="FIGHT_PORT")
 
     CLIENT_VERSION = "1.39.8e"
 

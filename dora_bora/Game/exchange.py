@@ -12,6 +12,10 @@ class Exchange:
         self.characters_server = {}
         self.characters_on_maps = defaultdict(list)
 
+        self.fights_lock = asyncio.Lock()
+        self.fights_counter = 0
+        self.fights_on_maps = defaultdict(list)
+
         self.game_actions_lock = asyncio.Lock()
         self.game_actions_counter = 0
         self.game_actions = defaultdict(dict)
@@ -75,3 +79,22 @@ class Exchange:
             "destination": destination,
         }
         return action_id
+
+    async def get_next_fight_id(self):
+        async with self.fights_lock:
+            self.fights_counter += 1
+            counter = self.fights_counter
+        return counter
+
+    async def fight_started(self, fight):
+        fight.state = fight.States.PLACEMENT
+        fight.id = await self.get_next_fight_id()
+        self.fights_on_maps[fight.map_id].append(fight)
+
+    async def broadcast_fight_count(self, map_id):
+        count = len(self.fights_on_maps[map_id])
+        if not count:
+            return
+        await asyncio.gather(
+            *[self.characters_server[c.id].write(f"fC{count}") for c in self.characters_on_maps[map_id]]
+        )
