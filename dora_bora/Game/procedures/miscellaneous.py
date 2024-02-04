@@ -4,7 +4,7 @@ from Login.models import Account
 async def disconnect(s):
     assert s.account
 
-    if s.map:
+    if s.map and s.character in s.exchange.characters_on_maps[s.map.id]:
         s.exchange.character_left_map(s.character, s.map)
         await s.exchange.broadcast_map_update(s.map)
 

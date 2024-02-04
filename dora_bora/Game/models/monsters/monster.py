@@ -107,3 +107,56 @@ class Monster(models.Model):
             luck=rank_template.luck,
             agility=rank_template.agility,
         )
+
+    def get_colors(self):
+        # TODO for color import for monsters
+        return [(hex(int(c))[2:] if c != "-1" else -1) for c in self.colors.split(",")]
+
+    def format_gt(self):
+        return f"{self.id};{self.template_id};{self.level}"
+
+    def format_fight_gm(self, team, cell_id):
+        return ";".join(
+            map(
+                str,
+                [
+                    cell_id,
+                    1,
+                    0,
+                    self.id,
+                    self.template_id,  # name?
+                    -2,
+                    f"{self.gfx_id}^100",  # gfx^size
+                    self.rank,
+                    *self.get_colors(),
+                    "0,0,0,0",  # items
+                    self.max_hit_points,
+                    self.action_points,
+                    self.movement_points,
+                    team,
+                ],
+            )
+        )
+        # str.append("-2;");
+        # str.append(this.mob.getTemplate().getGfxId()).append("^").append(this.mob.getSize()).append(";");
+        # str.append(this.mob.getGrade()).append(";");
+        # str.append(this.mob.getTemplate().getColors().replace(",", ";")).append(";");
+        # //Accessories Mobs (Qu'Tan & Ili) (Change taille démon + ajout item sur mobs en combat)
+        # int tst = this.mob.getTemplate().getId();
+        # if (tst==534) // Pandawa Ivre
+        #     str.append("0,1C3C,1C40,0;");
+        # else if (tst==547) // Pandalette ivre
+        #     str.append("0,1C3C,1C40,0;");
+        # else if (tst==1213)  // Mage Céleste
+        #     str.append("0,2BA,847,0;");
+        # /*else if (tst==30063) // Yllib - Affiche le Flood derrière la tête
+        # {
+        #     str.append("0,0,2155,0;");
+        # }*/
+        # else
+        #     str.append("0,0,0,0;");
+        # //class fighter
+        # str.append(this.getPdvMax()).append(";");
+        # str.append(this.mob.getPa()).append(";");
+        # str.append(this.mob.getPm()).append(";");
+        # str.append(this.team);

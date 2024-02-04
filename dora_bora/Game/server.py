@@ -12,10 +12,12 @@ class GameServer(BaseServer):
         self.account = None
         self.character = None
         self.map = None
+        self.fight = None
+        self.fighter = None
 
     async def run(self, server_name, exchange):
         self.exchange = exchange
-        self.client_id = await self.exchange.get_next_client_id()
+        self.client_id = await self.exchange.client_counter()
         self.server = await Server.objects.aget(name=server_name)
 
         await self.write("HG")

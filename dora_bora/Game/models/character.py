@@ -113,7 +113,6 @@ class Character(models.Model):
         }.get(_class, (10298, 314))
 
     async def teleport(self, map_id, cell_id):
-        print(self._map_id, "->", map_id)
         self._map = await Map.objects.aget(id=map_id)
         self.cell_id = cell_id
         await self.asave()
@@ -146,19 +145,24 @@ class Character(models.Model):
     def format_pods(self):
         return "Ow0|999"  # `Ow`used_pods|max_pods
 
+    def get_basic_gm(self, override_cell_id=None):
+        return [
+            override_cell_id or self.cell_id,
+            1,  # orientation
+            0,  # ? level ?
+            self.id,
+            self.name,
+            self._class,  # class,title;
+            f"{self.get_gfxid()}^100",  # gfxid^size
+            self.gender,
+        ]
+
     def format_gm(self):
-        return ";".join(
+        return "GM|+" + ";".join(
             map(
                 str,
                 [
-                    f"GM|+{self.cell_id}",
-                    1,  # orientation
-                    0,  # ? level ?
-                    self.id,
-                    self.name,
-                    self._class,  # class,title;
-                    f"{self.get_gfxid()}^100",  # gfxid^size
-                    self.gender,
+                    *self.get_basic_gm(),
                     "",  # -1,0,0,0
                     # alignement,?,wings,grade
                     *self.get_colors(),
@@ -173,3 +177,32 @@ class Character(models.Model):
                 ],
             )
         )
+
+    def format_fight_gm(self, team, cell_id):
+        return ";".join(
+            map(
+                str,
+                [
+                    *self.get_basic_gm(cell_id),
+                    self.level,
+                    "0,0,0,0",  # honor ?
+                    *self.get_colors(),
+                    ",,,,",  # equipment
+                    self.current_hit_points,
+                    self.action_points,
+                    self.movement_points,
+                    self.neutral_resistance,
+                    self.earth_resistance,
+                    self.fire_resistance,
+                    self.water_resistance,
+                    self.air_resistance,
+                    self.action_points_dodge,
+                    self.movement_points_dodge,
+                    team,
+                    "",  # space for mounts
+                ],
+            )
+        )
+
+    def format_gt(self):
+        return f"{self.id};{self.name};{self.level}"

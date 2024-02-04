@@ -28,7 +28,7 @@ async def handle_move_acknowledge(s, success, action_data, payload):
 
     group_id = await sync_to_async(s.map.get_aggressing_group)(s.character)
     if group_id:
-        s.fight = await create_monster_fight(s, group_id)
+        s.fight, s.fighter = await create_monster_fight(s, group_id)
         await s.exchange.fight_started(s.fight)
         await s.exchange.broadcast_fight_count(s.map.id)
         await s.write(s.fight.format_gjk())
@@ -39,7 +39,23 @@ async def handle_move_acknowledge(s, success, action_data, payload):
 
         # TODO timer ??
 
+        # show placement spots
         await s.write(await s.fight.format_gp(team=0))
+        # carry states
+        await s.exchange.broadcast_ga_to_fight(f"GA;950;{s.character.id};{s.character.id},3,0", s.fight)
+        await s.exchange.broadcast_ga_to_fight(f"GA;950;{s.character.id};{s.character.id},8,0", s.fight)
+
+        # remove mob group
+        # remove character from map
+        s.exchange.character_left_map(s.character, s.map)
+        await s.exchange.broadcast_character_left_map(s.character.id, s.map.id)
+        # add flag to map
+        await s.exchange.broadcast_new_map_fight_flag(s.map.id, s.fight)
+        # add charac to fight map
+        await s.exchange.broadcast_all_fighters_joined_fight(s.fight)
+
+        # add mobs to fight map
+        # send gms to fight
 
 
 async def handle_game_action_acknowledges(s, data):

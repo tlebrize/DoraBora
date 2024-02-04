@@ -107,6 +107,24 @@ async def send_extra_informations(s):
     # players + jobs ?
 
 
+async def handle_fight_ready(s, data):
+    assert s.fight
+    assert s.fighter
+    assert s.fight.state == s.fight.States.PLACEMENT
+
+    ready = bool(int(data))
+    await s.fight.set_ready(s.fighter, ready)
+
+
+async def handle_fight_placement(s, data):
+    assert s.fight
+    assert s.fighter
+    assert s.fight.state == s.fight.States.PLACEMENT
+
+    cell_id = int(data)
+    await s.fight.change_placement(s.fighter, cell_id)
+
+
 async def game_handler(s, command):
     match command[0]:
         case "C":
@@ -117,3 +135,7 @@ async def game_handler(s, command):
             await handle_game_action(s, command[1:])
         case "K":
             await handle_game_action_acknowledges(s, command[1:])
+        case "R":
+            await handle_fight_ready(s, command[1:])
+        case "p":
+            await handle_fight_placement(s, command[1:])

@@ -31,7 +31,7 @@ class MonsterTemplate(models.Model):
 
         ranks = []
 
-        zipped = zip(range(12), basics, stats, spells, pdvs, points, initiatives, exps)
+        zipped = zip(range(1, 12), basics, stats, spells, pdvs, points, initiatives, exps)
         for rank, basics, raw_stats, spells, hit_points, points, initiative, experience_reward in zipped:
             if basics == "1@":
                 continue

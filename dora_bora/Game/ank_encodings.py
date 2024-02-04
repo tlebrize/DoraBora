@@ -1,4 +1,5 @@
 import string
+from collections import defaultdict
 
 BASE64 = string.ascii_letters + string.digits + "-_"
 
@@ -18,11 +19,11 @@ def ank_encode_cell(decoded):
     return BASE64[decoded // 64] + BASE64[decoded % 64]
 
 
-def ank_decode_int(c):
-    for i in range(len(BASE64)):
-        if BASE64[i] == c:
-            return i
-    return -1
+def ank_decode_int(c, default=-1):
+    try:
+        return BASE64.index(c)
+    except ValueError:
+        return default
 
 
 def ank_decode_map_data(map_data):
@@ -51,5 +52,26 @@ def ank_decode_map_data(map_data):
 
         cells.append({"cell_id": cell_id, "walkable": walkable, "los": los, "obj": obj})
         cell_id += 1
+
+    return cells
+
+
+def ank_decode_places(map_):
+    if not map_.places or not map_.map_data:
+        raise Exception("Invalid Map, has no places or data.")
+
+    cells = defaultdict(list)
+    for team, team_places in enumerate(map_.places):
+        for x, y in zip(team_places[::2], team_places[1::2]):
+            id_x = ank_decode_int(x)
+            id_y = ank_decode_int(y)
+            index = (id_x << 6) + (id_y)
+            try:
+                cell = map_.map_data[index]
+                if cell.get("walkable"):
+                    cells[team].append(cell)
+
+            except IndexError as err:
+                raise Exception("Invalid cell, index not found") from err
 
     return cells
